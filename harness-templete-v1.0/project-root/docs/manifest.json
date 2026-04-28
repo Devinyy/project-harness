@@ -1,0 +1,374 @@
+{
+  "version": "1.0.0",
+  "last_updated": "2026-04-21",
+  "description": "项目 docs/ 目录的文件清单与元信息，供开发者快速定位所需文档。",
+  "usage": "开发者收到任务后，可根据 task_triggers 匹配相关文档，按 reading_order 阅读后再开始开发。",
+  "docs_files": [
+    {
+      "file": "00_INDEX.md",
+      "purpose": "docs 总入口，提供阅读路径、使用原则与维护规则",
+      "keywords": [
+        "导航",
+        "阅读顺序",
+        "使用原则",
+        "文档维护",
+        "AI 使用规则"
+      ],
+      "task_triggers": [
+        "首次接手项目",
+        "不确定该看哪个文档"
+      ],
+      "reading_order": 0
+    },
+    {
+      "file": "01_PROJECT_OVERVIEW.md",
+      "purpose": "项目全局认知：做什么、技术栈、怎么跑、依赖什么",
+      "keywords": [
+        "项目简介",
+        "技术栈",
+        "环境变量",
+        "启动命令",
+        "部署",
+        "外部依赖"
+      ],
+      "task_triggers": [
+        "首次接手",
+        "搭建本地环境",
+        "了解项目背景",
+        "查技术栈版本"
+      ],
+      "reading_order": 1
+    },
+    {
+      "file": "02_ARCHITECTURE.md",
+      "purpose": "目录分层、路由组织、数据流、状态管理与扩展规则",
+      "keywords": [
+        "目录结构",
+        "分层",
+        "路由",
+        "数据流",
+        "状态管理",
+        "service",
+        "store",
+        "扩展规则"
+      ],
+      "task_triggers": [
+        "新增页面",
+        "新增模块",
+        "调整目录",
+        "修改路由",
+        "修改状态管理",
+        "代码放哪里"
+      ],
+      "reading_order": 2
+    },
+    {
+      "file": "03_BUSINESS_DOMAIN.md",
+      "purpose": "业务术语、角色、实体、状态流转与关键规则",
+      "keywords": [
+        "术语",
+        "角色",
+        "权限",
+        "实体",
+        "状态机",
+        "业务规则",
+        "易混淆概念"
+      ],
+      "task_triggers": [
+        "遇到不确定的业务概念",
+        "状态字段含义不清",
+        "角色权限差异",
+        "枚举值业务含义"
+      ],
+      "reading_order": 3
+    },
+    {
+      "file": "04_CODING_STANDARDS.md",
+      "purpose": "命名、类型、样式、导入、错误处理、注释与可维护性规范",
+      "keywords": [
+        "命名规范",
+        "TypeScript",
+        "代码风格",
+        "导入顺序",
+        "错误处理",
+        "注释",
+        "禁止清单"
+      ],
+      "task_triggers": [
+        "写任何代码前",
+        "Code Review",
+        "不确定命名或风格"
+      ],
+      "reading_order": 4
+    },
+    {
+      "file": "05_COMPONENT_PATTERNS.md",
+      "purpose": "组件分层、目录模板、页面骨架、表单/列表/弹层模式",
+      "keywords": [
+        "组件分层",
+        "page",
+        "feature",
+        "shared",
+        "ui",
+        "拆组件",
+        "hooks",
+        "composables",
+        "表单模式",
+        "列表模式"
+      ],
+      "task_triggers": [
+        "新增组件",
+        "新增页面",
+        "拆分组件",
+        "决定组件放哪层",
+        "写 hook"
+      ],
+      "reading_order": 5
+    },
+    {
+      "file": "06_UI_COMPONENT_GUIDE.md",
+      "purpose": "UI 选型规则：按钮、表格、表单、弹层、反馈态、布局",
+      "keywords": [
+        "UI 选型",
+        "Button",
+        "Table",
+        "Modal",
+        "Drawer",
+        "Form",
+        "反馈态",
+        "空态",
+        "loading",
+        "样式约定"
+      ],
+      "task_triggers": [
+        "选择 UI 组件",
+        "决定用 Modal 还是 Drawer",
+        "表单设计",
+        "表格列设计",
+        "处理空态和错误态"
+      ],
+      "reading_order": 6
+    },
+    {
+      "file": "07_API_CONTRACTS.md",
+      "purpose": "接口组织、字段模型、适配逻辑、错误处理、分页与 Mock",
+      "keywords": [
+        "API",
+        "service",
+        "adapter",
+        "DTO",
+        "错误码",
+        "分页",
+        "时间格式",
+        "金额",
+        "Mock",
+        "缓存"
+      ],
+      "task_triggers": [
+        "接入新接口",
+        "修改接口调用",
+        "处理接口错误",
+        "字段映射",
+        "联调"
+      ],
+      "reading_order": 7
+    },
+    {
+      "file": "08_TASK_PLAYBOOKS.md",
+      "purpose": "常见任务的标准步骤：列表页、详情页、表单、接口、权限、Bug、重构",
+      "keywords": [
+        "列表页",
+        "详情页",
+        "表单",
+        "接口接入",
+        "权限",
+        "Bug 修复",
+        "重构",
+        "playbook",
+        "开发步骤"
+      ],
+      "task_triggers": [
+        "拿到新任务不知道从哪开始",
+        "新增列表页",
+        "新增详情页",
+        "新增表单",
+        "修 Bug",
+        "重构"
+      ],
+      "reading_order": 8
+    },
+    {
+      "file": "09_TECH_SOLUTION_TEMPLATE.md",
+      "purpose": "开发前技术方案的标准模板结构",
+      "keywords": [
+        "技术方案",
+        "模板",
+        "方案结构",
+        "需求分析",
+        "风险评估",
+        "实现拆分"
+      ],
+      "task_triggers": [
+        "需要写技术方案",
+        "复杂需求开发前"
+      ],
+      "reading_order": 9
+    },
+    {
+      "file": "10_TECH_SOLUTION_PLAYBOOK.md",
+      "purpose": "什么时候必须先出方案、方案如何推导、如何自检",
+      "keywords": [
+        "方案触发条件",
+        "方案推导步骤",
+        "自检清单",
+        "方案质量标准"
+      ],
+      "task_triggers": [
+        "判断是否需要写方案",
+        "写方案前的准备",
+        "方案自检"
+      ],
+      "reading_order": 10
+    },
+    {
+      "file": "11_DANGEROUS_AREAS.md",
+      "purpose": "高风险区域标记：路由、权限、拦截器、公共组件、全局样式、构建配置",
+      "keywords": [
+        "危险区",
+        "P0",
+        "P1",
+        "路由修改",
+        "权限修改",
+        "拦截器",
+        "基础组件",
+        "全局样式",
+        "构建配置",
+        "回滚"
+      ],
+      "task_triggers": [
+        "修改公共模块",
+        "修改路由",
+        "修改权限",
+        "修改请求拦截器",
+        "修改全局样式",
+        "修改构建配置"
+      ],
+      "reading_order": 11
+    },
+    {
+      "file": "12_TROUBLESHOOTING.md",
+      "purpose": "按症状分类的排障路径：白屏、权限异常、接口异常、状态不同步、构建失败",
+      "keywords": [
+        "白屏",
+        "启动失败",
+        "权限异常",
+        "接口错误",
+        "状态不同步",
+        "构建失败",
+        "性能问题",
+        "排障"
+      ],
+      "task_triggers": [
+        "页面白屏",
+        "本地跑不起来",
+        "接口报错",
+        "数据不对",
+        "构建失败",
+        "线上故障"
+      ],
+      "reading_order": 12
+    }
+  ],
+  "examples_files": [
+    {
+      "file": "EXAMPLE_API_CONTRACT_ENTRY.md",
+      "purpose": "接口契约条目的已填充示例",
+      "demonstrates": "07_API_CONTRACTS.md 中单接口说明模板的写法与颗粒度"
+    },
+    {
+      "file": "EXAMPLE_BUSINESS_GLOSSARY.md",
+      "purpose": "业务术语与状态流转的已填充示例",
+      "demonstrates": "03_BUSINESS_DOMAIN.md 中术语、角色、状态机的写法"
+    },
+    {
+      "file": "EXAMPLE_FILLED_TECH_SOLUTION.md",
+      "purpose": "完整前端技术方案的已填充示例",
+      "demonstrates": "09_TECH_SOLUTION_TEMPLATE.md 应该写到什么程度"
+    },
+    {
+      "file": "EXAMPLE_TASK_BREAKDOWN_ADD_LIST_PAGE.md",
+      "purpose": "新增列表页的任务拆解示例",
+      "demonstrates": "08_TASK_PLAYBOOKS.md 中 Playbook A 的实际拆解方式"
+    },
+    {
+      "file": "EXAMPLE_COMPONENT_PATTERN.md",
+      "purpose": "Feature 组件从目录结构到完整实现的示例",
+      "demonstrates": "05_COMPONENT_PATTERNS.md 和 06_UI_COMPONENT_GUIDE.md 中组件分层、props 设计、hook 封装、样式组织的落地写法"
+    },
+    {
+      "file": "README.md",
+      "purpose": "examples 目录说明",
+      "demonstrates": "示例目录的使用方式与注意事项"
+    }
+  ],
+  "task_to_docs": {
+    "首次接手项目": [
+      "00_INDEX.md",
+      "01_PROJECT_OVERVIEW.md",
+      "02_ARCHITECTURE.md",
+      "03_BUSINESS_DOMAIN.md",
+      "04_CODING_STANDARDS.md"
+    ],
+    "新增列表页": [
+      "02_ARCHITECTURE.md",
+      "05_COMPONENT_PATTERNS.md",
+      "06_UI_COMPONENT_GUIDE.md",
+      "07_API_CONTRACTS.md",
+      "08_TASK_PLAYBOOKS.md"
+    ],
+    "新增详情页": [
+      "02_ARCHITECTURE.md",
+      "05_COMPONENT_PATTERNS.md",
+      "06_UI_COMPONENT_GUIDE.md",
+      "07_API_CONTRACTS.md",
+      "08_TASK_PLAYBOOKS.md"
+    ],
+    "新增表单": [
+      "05_COMPONENT_PATTERNS.md",
+      "06_UI_COMPONENT_GUIDE.md",
+      "07_API_CONTRACTS.md",
+      "08_TASK_PLAYBOOKS.md"
+    ],
+    "接入新接口": [
+      "02_ARCHITECTURE.md",
+      "04_CODING_STANDARDS.md",
+      "07_API_CONTRACTS.md",
+      "08_TASK_PLAYBOOKS.md"
+    ],
+    "修改公共模块": [
+      "11_DANGEROUS_AREAS.md",
+      "02_ARCHITECTURE.md",
+      "04_CODING_STANDARDS.md",
+      "06_UI_COMPONENT_GUIDE.md"
+    ],
+    "写技术方案": [
+      "10_TECH_SOLUTION_PLAYBOOK.md",
+      "09_TECH_SOLUTION_TEMPLATE.md",
+      "02_ARCHITECTURE.md",
+      "03_BUSINESS_DOMAIN.md",
+      "07_API_CONTRACTS.md"
+    ],
+    "修 Bug": [
+      "12_TROUBLESHOOTING.md",
+      "11_DANGEROUS_AREAS.md",
+      "08_TASK_PLAYBOOKS.md"
+    ],
+    "重构": [
+      "02_ARCHITECTURE.md",
+      "11_DANGEROUS_AREAS.md",
+      "08_TASK_PLAYBOOKS.md",
+      "04_CODING_STANDARDS.md"
+    ]
+  },
+  "task_to_docs_description": "根据任务类型快速匹配需要阅读的文档"
+}
