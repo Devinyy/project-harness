@@ -1,0 +1,10 @@
+# Project Harness
+
+Read these first:
+
+- `agent.md`
+- `docs/00_SETUP_GUIDE.md`
+- `docs/00_INDEX.md`
+- `docs/manifest.json`
+
+Do not use template examples as project facts. Prefer the real codebase and the verified docs.
