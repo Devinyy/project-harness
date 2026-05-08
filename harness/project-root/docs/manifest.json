@@ -1,0 +1,306 @@
+{
+  "version": "1.1.0",
+  "last_updated": "2026-04-28",
+  "description": "Project Harness 文档清单、分级和任务路由。v1.1 强调真实项目约束优先于通用模板。",
+  "usage": "开发者或 AI 收到任务后，先根据 level 与 task_to_docs 匹配相关文档，再阅读对应文件。未完成真实性校验的内容只能作为待确认信息。",
+  "levels": {
+    "required": {
+      "description": "首次接入项目必须优先填写，决定 AI 是否能安全理解项目事实。",
+      "files": [
+        "00_SETUP_GUIDE.md",
+        "00_INDEX.md",
+        "01_PROJECT_OVERVIEW.md",
+        "02_ARCHITECTURE.md",
+        "03_BUSINESS_DOMAIN.md",
+        "04_CODING_STANDARDS.md",
+        "11_DANGEROUS_AREAS.md"
+      ]
+    },
+    "optional": {
+      "description": "随真实需求逐步补齐，用于提升日常开发一致性。",
+      "files": [
+        "05_COMPONENT_PATTERNS.md",
+        "06_UI_COMPONENT_GUIDE.md",
+        "07_API_CONTRACTS.md",
+        "08_TASK_PLAYBOOKS.md",
+        "12_TROUBLESHOOTING.md"
+      ]
+    },
+    "advanced": {
+      "description": "复杂需求、方案评审、Agent 工作流和示例沉淀使用。",
+      "files": [
+        "09_TECH_SOLUTION_TEMPLATE.md",
+        "10_TECH_SOLUTION_PLAYBOOK.md",
+        "examples/",
+        "../skills/"
+      ]
+    }
+  },
+  "docs_files": [
+    {
+      "file": "00_SETUP_GUIDE.md",
+      "level": "required",
+      "purpose": "Project Harness 初始化指南，说明哪些文档必须先填、哪些可以后补",
+      "task_triggers": [
+        "首次接入 Harness",
+        "创建项目专用文档",
+        "校准模板真实性"
+      ],
+      "reading_order": 0
+    },
+    {
+      "file": "00_INDEX.md",
+      "level": "required",
+      "purpose": "docs 总入口，提供阅读路径、使用原则与维护规则",
+      "task_triggers": [
+        "首次接手项目",
+        "不确定该看哪个文档"
+      ],
+      "reading_order": 1
+    },
+    {
+      "file": "01_PROJECT_OVERVIEW.md",
+      "level": "required",
+      "purpose": "项目全局认知：做什么、技术栈、怎么跑、依赖什么",
+      "task_triggers": [
+        "首次接手",
+        "搭建本地环境",
+        "了解项目背景",
+        "查技术栈版本"
+      ],
+      "reading_order": 2
+    },
+    {
+      "file": "02_ARCHITECTURE.md",
+      "level": "required",
+      "purpose": "目录分层、路由组织、数据流、状态管理与扩展规则",
+      "task_triggers": [
+        "新增页面",
+        "新增模块",
+        "调整目录",
+        "修改路由",
+        "修改状态管理",
+        "代码放哪里"
+      ],
+      "reading_order": 3
+    },
+    {
+      "file": "03_BUSINESS_DOMAIN.md",
+      "level": "required",
+      "purpose": "业务术语、角色、实体、状态流转与关键规则",
+      "task_triggers": [
+        "遇到不确定的业务概念",
+        "状态字段含义不清",
+        "角色权限差异",
+        "枚举值业务含义"
+      ],
+      "reading_order": 4
+    },
+    {
+      "file": "04_CODING_STANDARDS.md",
+      "level": "required",
+      "purpose": "命名、类型、样式、导入、错误处理、注释与可维护性规范",
+      "task_triggers": [
+        "写任何代码前",
+        "Code Review",
+        "不确定命名或风格"
+      ],
+      "reading_order": 5
+    },
+    {
+      "file": "11_DANGEROUS_AREAS.md",
+      "level": "required",
+      "purpose": "高风险区域标记：路由、权限、拦截器、公共组件、全局样式、构建配置",
+      "task_triggers": [
+        "修改公共模块",
+        "修改路由",
+        "修改权限",
+        "修改请求拦截器",
+        "修改全局样式",
+        "修改构建配置"
+      ],
+      "reading_order": 6
+    },
+    {
+      "file": "05_COMPONENT_PATTERNS.md",
+      "level": "optional",
+      "purpose": "组件分层、目录模板、页面骨架、表单/列表/弹层模式",
+      "task_triggers": [
+        "新增组件",
+        "新增页面",
+        "拆分组件",
+        "决定组件放哪层"
+      ],
+      "reading_order": 7
+    },
+    {
+      "file": "06_UI_COMPONENT_GUIDE.md",
+      "level": "optional",
+      "purpose": "UI 选型规则：按钮、表格、表单、弹层、反馈态、布局",
+      "task_triggers": [
+        "选择 UI 组件",
+        "决定用 Modal 还是 Drawer",
+        "表单设计",
+        "表格列设计"
+      ],
+      "reading_order": 8
+    },
+    {
+      "file": "07_API_CONTRACTS.md",
+      "level": "optional",
+      "purpose": "接口组织、字段模型、适配逻辑、错误处理、分页与 Mock",
+      "task_triggers": [
+        "接入新接口",
+        "修改接口调用",
+        "处理接口错误",
+        "字段映射",
+        "联调"
+      ],
+      "reading_order": 9
+    },
+    {
+      "file": "08_TASK_PLAYBOOKS.md",
+      "level": "optional",
+      "purpose": "常见任务的标准步骤：列表页、详情页、表单、接口、权限、Bug、重构",
+      "task_triggers": [
+        "拿到新任务不知道从哪开始",
+        "新增列表页",
+        "新增详情页",
+        "新增表单",
+        "修 Bug",
+        "重构"
+      ],
+      "reading_order": 10
+    },
+    {
+      "file": "09_TECH_SOLUTION_TEMPLATE.md",
+      "level": "advanced",
+      "purpose": "开发前技术方案的标准模板结构",
+      "task_triggers": [
+        "需要写技术方案",
+        "复杂需求开发前"
+      ],
+      "reading_order": 11
+    },
+    {
+      "file": "10_TECH_SOLUTION_PLAYBOOK.md",
+      "level": "advanced",
+      "purpose": "什么时候必须先出方案、方案如何推导、如何自检",
+      "task_triggers": [
+        "判断是否需要写方案",
+        "写方案前的准备",
+        "方案自检"
+      ],
+      "reading_order": 12
+    },
+    {
+      "file": "12_TROUBLESHOOTING.md",
+      "level": "optional",
+      "purpose": "按症状分类的排障路径：白屏、权限异常、接口异常、状态不同步、构建失败",
+      "task_triggers": [
+        "页面白屏",
+        "本地跑不起来",
+        "接口报错",
+        "数据不对",
+        "构建失败",
+        "线上故障"
+      ],
+      "reading_order": 13
+    }
+  ],
+  "examples_files": [
+    {
+      "file": "EXAMPLE_API_CONTRACT_ENTRY.md",
+      "purpose": "接口契约条目的已填充示例"
+    },
+    {
+      "file": "EXAMPLE_BUSINESS_GLOSSARY.md",
+      "purpose": "业务术语与状态流转的已填充示例"
+    },
+    {
+      "file": "EXAMPLE_FILLED_TECH_SOLUTION.md",
+      "purpose": "完整前端技术方案的已填充示例"
+    },
+    {
+      "file": "EXAMPLE_TASK_BREAKDOWN_ADD_LIST_PAGE.md",
+      "purpose": "新增列表页的任务拆解示例"
+    },
+    {
+      "file": "react/EXAMPLE_COMPONENT_PATTERN_REACT.md",
+      "purpose": "React + TSX 组件模式示例，仅 React 项目使用"
+    },
+    {
+      "file": "vue/EXAMPLE_COMPONENT_PATTERN_VUE.md",
+      "purpose": "Vue 3 + SFC 组件模式示例，仅 Vue 项目使用"
+    },
+    {
+      "file": "README.md",
+      "purpose": "examples 目录说明"
+    }
+  ],
+  "task_to_docs": {
+    "首次接手项目": [
+      "00_SETUP_GUIDE.md",
+      "00_INDEX.md",
+      "01_PROJECT_OVERVIEW.md",
+      "02_ARCHITECTURE.md",
+      "03_BUSINESS_DOMAIN.md",
+      "04_CODING_STANDARDS.md",
+      "11_DANGEROUS_AREAS.md"
+    ],
+    "新增页面或模块": [
+      "02_ARCHITECTURE.md",
+      "03_BUSINESS_DOMAIN.md",
+      "05_COMPONENT_PATTERNS.md",
+      "06_UI_COMPONENT_GUIDE.md",
+      "07_API_CONTRACTS.md",
+      "08_TASK_PLAYBOOKS.md",
+      "11_DANGEROUS_AREAS.md"
+    ],
+    "接入新接口": [
+      "02_ARCHITECTURE.md",
+      "04_CODING_STANDARDS.md",
+      "07_API_CONTRACTS.md",
+      "08_TASK_PLAYBOOKS.md",
+      "11_DANGEROUS_AREAS.md"
+    ],
+    "修改公共模块": [
+      "11_DANGEROUS_AREAS.md",
+      "02_ARCHITECTURE.md",
+      "04_CODING_STANDARDS.md",
+      "06_UI_COMPONENT_GUIDE.md"
+    ],
+    "写技术方案": [
+      "10_TECH_SOLUTION_PLAYBOOK.md",
+      "09_TECH_SOLUTION_TEMPLATE.md",
+      "01_PROJECT_OVERVIEW.md",
+      "02_ARCHITECTURE.md",
+      "03_BUSINESS_DOMAIN.md",
+      "07_API_CONTRACTS.md",
+      "11_DANGEROUS_AREAS.md"
+    ],
+    "修 Bug": [
+      "12_TROUBLESHOOTING.md",
+      "11_DANGEROUS_AREAS.md",
+      "08_TASK_PLAYBOOKS.md"
+    ],
+    "重构": [
+      "02_ARCHITECTURE.md",
+      "11_DANGEROUS_AREAS.md",
+      "08_TASK_PLAYBOOKS.md",
+      "04_CODING_STANDARDS.md"
+    ]
+  },
+  "truthfulness_policy": {
+    "template_content_is_not_project_fact": true,
+    "must_fill_current_project_adoption": [
+      "01_PROJECT_OVERVIEW.md",
+      "02_ARCHITECTURE.md",
+      "05_COMPONENT_PATTERNS.md",
+      "06_UI_COMPONENT_GUIDE.md",
+      "07_API_CONTRACTS.md"
+    ],
+    "must_not_create_unverified_directories": true,
+    "must_not_mix_framework_examples": true
+  }
+}

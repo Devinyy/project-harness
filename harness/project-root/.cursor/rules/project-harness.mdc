@@ -1,0 +1,13 @@
+---
+description: Project Harness rules for this repository
+alwaysApply: true
+---
+
+Before coding, read:
+
+- `agent.md`
+- `docs/00_SETUP_GUIDE.md`
+- `docs/00_INDEX.md`
+- `docs/manifest.json`
+
+Do not create directories, frameworks, component libraries, stores, routes, or request layers that do not exist in the current project. Treat examples as examples only, not project facts.
