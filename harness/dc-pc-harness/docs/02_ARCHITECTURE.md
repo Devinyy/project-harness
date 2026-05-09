@@ -59,7 +59,7 @@ related:
 ├── 布局壳（sidebar + header + tab-router）
 └── 微前端容器（micro-app 子应用加载）
 
-子应用层（app-merchant / app-product / app-system）
+子应用层（app-merchant / app-product / app-system / app-org-account）
 ├── 路由（Hash 模式，独立路由表）
 ├── 业务页面（views/）
 ├── 业务组件（components/）
@@ -160,21 +160,32 @@ apps/app-product/src/
 │   ├── product-price-rule.ts               # 价格规则接口
 │   ├── product-price-rule.adapter.ts       # 价格规则响应转换
 │   └── __contracts__/                      # adapter 契约测试
+├── components/
+│   ├── common/                             # 跨领域通用组件
+│   ├── product/                            # 商品域业务组件
+│   └── price-rule/                         # 价格规则域业务组件
 ├── composables/
-│   └── ops/                               # 各页面 composables
-│       ├── useOpsProductListQuery.ts
-│       ├── useOpsProductDetail.ts
-│       ├── useOpsPriceRuleListQuery.ts
-│       ├── useOpsPriceRuleForm.ts
-│       └── useOpsPriceRuleSelection.ts
+│   ├── useProductListQuery.ts
+│   ├── useProductDetail.ts
+│   ├── usePriceRuleListQuery.ts
+│   ├── usePriceRuleForm.ts
+│   └── usePriceRuleSelection.ts
 ├── micro/
 ├── request/
-│   └── __contracts__/                     # token/userInfo 契约测试
+│   └── __contracts__/                      # token/userInfo 契约测试
 ├── router/
 ├── types/
-│   ├── product.ts                         # ProductRecord、ProductStatus 等
-│   └── price-rule.ts                      # PriceRuleRecord、PriceRuleStatus 等
-└── utils/
+│   ├── product.ts                          # ProductRecord、ProductStatus 等
+│   └── price-rule.ts                       # PriceRuleRecord、PriceRuleStatus 等
+├── utils/
+└── views/
+    ├── product/
+    │   ├── list.vue
+    │   └── detail.vue
+    └── price-rule/
+        ├── list.vue
+        ├── detail.vue
+        └── form.vue
 ```
 
 ### 3.4 packages（共享包）

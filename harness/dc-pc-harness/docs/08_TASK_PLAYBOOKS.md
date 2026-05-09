@@ -57,7 +57,7 @@ related:
 
 在同 app 的 `views/` 中找最相似的现有列表页。
 
-- `app-product`：参考 `views/ops/product/list.vue` + `composables/ops/useOpsProductListQuery.ts`
+- `app-product`：参考 `views/product/list.vue` + `composables/useProductListQuery.ts`
 - `app-merchant`：参考 `views/merchant/list.vue`
 
 ### 第二步：新增路由
@@ -102,13 +102,13 @@ export const DOMAIN_DEFAULT_QUERY: DomainQuery = { pageNum: 1, pageSize: 10, ...
 
 命名规则因 app 而异：
 
-- **app-product**：`src/composables/ops/useOps{Domain}ListQuery.ts`（如 `useOpsPriceRuleListQuery.ts`）
+- **app-product**：`src/composables/use{Domain}ListQuery.ts`
 - **app-merchant**：`src/composables/use{Domain}Query.ts`（如 `useMerchantQuery.ts`）
 
 查询列表的 composable 必须包含**路由同步**模式（以 URL 为真值驱动请求）：
 
 ```typescript
-export function useOpsDomainListQuery() {
+export function use{Domain}ListQuery() {
   const route = useRoute();
   const router = useRouter();
   const loading = ref(false);
@@ -163,7 +163,7 @@ export function useOpsDomainListQuery() {
 
 路径因 app 而异：
 
-- **app-product**：`src/views/ops/{domain}/list.vue`，子组件放 `components/ops/{domain}/`
+- **app-product**：`src/views/{domain}/list.vue`，子组件放 `components/{domain}/`
 - **app-merchant**：`src/views/merchant/list.vue`，子组件放 `components/merchant/list/`
 
 规则：
@@ -189,7 +189,7 @@ export function useOpsDomainListQuery() {
 
 ### 参考
 
-- `app-product`：`views/ops/product/detail.vue` + `composables/ops/useOpsProductDetail.ts`
+- `app-product`：`views/product/detail.vue` + `composables/useProductDetail.ts`
 
 ### 标准步骤
 
@@ -197,8 +197,8 @@ export function useOpsDomainListQuery() {
 2. 在 `src/router/index.ts` 新增路由（如 `/your-domain/detail/:id`）
 3. 在 `api/domain.ts` 中新增 `getDomainDetail(id: string)` 函数
 4. 在 `api/domain.detail.mapper.ts` 中实现响应 → UI 类型映射
-5. 创建 composable（app-product：`useOps{Domain}Detail`；app-merchant：`use{Domain}Detail`），封装 loading、detail、fetchDetail
-6. 在 `views/` 中创建页面，拆分 section 组件到 `components/{domain}/detail/`（app-merchant 风格）或 `components/ops/{domain}/`（app-product 风格）
+5. 创建 composable `use{Domain}Detail`，封装 loading、detail、fetchDetail
+6. 在 `views/` 中创建页面，拆分 section 组件到 `components/{domain}/`
 7. 返回路径处理：`router.back()` 或固定跳回列表 URL
 
 ### 容易漏掉的点
@@ -215,7 +215,7 @@ export function useOpsDomainListQuery() {
 ### 参考
 
 - `app-merchant`：`views/merchant/form.vue`
-- `app-product`：`views/ops/price-rule/form.vue`
+- `app-product`：`views/price-rule/form.vue`
 
 ### 标准步骤
 
@@ -223,7 +223,7 @@ export function useOpsDomainListQuery() {
 2. 在 `router/index.ts` 新增路由（如 `/your-domain/form/:id?`，`id` 可选表示新建/编辑复用）
 3. 在 `api/domain.ts` 中新增 `saveDomain` / `updateDomain` 函数
 4. 在 `types/domain.ts` 中定义 `DomainFormState`
-5. 创建 composable（app-product：`useOps{Domain}Form`；app-merchant：`use{Domain}Form`），封装表单状态、校验、提交
+5. 创建 composable `use{Domain}Form`，封装表单状态、校验、提交
 6. 在 `views/` 创建页面，使用 `DcgjFormPro` 或手写表单；大表单拆分为 Section 组件（参考 `components/merchant/form/`）
 7. 提交成功后跳转详情页或列表页
 8. 编辑态：进入时调详情接口回填数据

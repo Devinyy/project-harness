@@ -147,7 +147,8 @@ dc-platform-new/
 │   ├── micro-main/          # 主基座（端口 3000）
 │   ├── app-system/          # 系统管理子应用（端口 3001，骨架阶段）
 │   ├── app-merchant/        # 商家管理子应用（端口 3002）
-│   └── app-product/         # 商品中心子应用（端口 3003）
+│   ├── app-product/         # 商品中心子应用（端口 3003）
+│   └── app-org-account/     # 组织账号子应用（开发中）
 ├── packages/
 │   ├── shared-types/        # 公共 TS 类型（@platform/shared-types）
 │   ├── shared-utils/        # 公共工具函数（@platform/shared-utils）

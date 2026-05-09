@@ -62,7 +62,7 @@ related:
 | 文件类型 | 规范 | 示例 |
 |---------|------|------|
 | Vue 组件 | `PascalCase.vue` | `StatusTag.vue`, `ProductSearchForm.vue` |
-| Composable | `useXxx.ts` | `useOpsProductListQuery.ts` |
+| Composable | `useXxx.ts` | `useProductListQuery.ts` |
 | API 文件 | `domain.ts` | `product.ts`, `merchant.ts` |
 | API mapper | `domain.xxx.mapper.ts` | `merchant.detail.mapper.ts` |
 | API 类型定义 | `domain.definitions.ts` | `merchant.definitions.ts` |
@@ -257,13 +257,12 @@ components/
 ├── common/          # 无业务依赖、可跨子路由复用的组件
 │   ├── StatusTag.vue
 │   └── PriceText.vue
-└── ops/             # 按业务子模块组织
-    ├── product/
-    │   ├── ProductTable.vue
-    │   └── ProductSearchForm.vue
-    └── price-rule/
-        ├── PriceRuleTable.vue
-        └── PriceRuleDetailPanel.vue
+├── product/         # 商品域业务组件
+│   ├── ProductTable.vue
+│   └── ProductSearchForm.vue
+└── price-rule/      # 价格规则域业务组件
+    ├── PriceRuleTable.vue
+    └── PriceRuleDetailPanel.vue
 ```
 
 ---
@@ -374,7 +373,7 @@ const res = await axios.get('/ops/v1/shop/query-detail?shopId=' + id);
 
 - 使用 **Sass（`.scss`）** 编写样式
 - Vue 组件内使用 `<style scoped>` 局部样式，避免污染全局
-- CSS class 命名：`kebab-case`（如 `ops-product-list`、`product-status-tag`）
+- CSS class 命名：`kebab-case`（如 `product-list`、`product-status-tag`）
 - 状态修饰符：`is-` 前缀（如 `is-status-2`、`is-rule-status-active`）
 
 ### 8.2 颜色与设计 Token
@@ -518,7 +517,7 @@ refactor(app-product): 更新价格规则适配器以反映新的状态字段
 
 - [x] Prettier 配置来自 `.prettierrc.json`
 - [x] TypeScript strict 配置来自 `tsconfig.base.json`
-- [x] 命名规范来自真实代码（`StatusTag.vue`、`useOpsProductListQuery.ts` 等）
+- [x] 命名规范来自真实代码（`StatusTag.vue`、`useProductListQuery.ts` 等）
 - [x] Commit 类型来自 `commitlint.config.mjs`
 - [x] 组件写法基于真实 `.vue` 文件提取
 - [x] 本文档最后校验日期：2026-05-08

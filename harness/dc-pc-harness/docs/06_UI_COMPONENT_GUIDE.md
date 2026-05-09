@@ -27,7 +27,7 @@ related:
 - 当前项目 UI 组件库：`Dcgj UI（基于 Ant Design Vue 二次封装）`
 - 当前项目样式方案：`Sass + <style scoped>`（`dcgj-ui` 内部使用 CSS-in-JS，**项目层不用**）
 - 真实基础组件目录：`dcgj-ui`（统一导出入口）
-- 真实业务组件目录：`src/components/common/`（通用业务组件）、`src/components/ops/{domain}/` 或 `src/components/{domain}/`（域内组件）
+- 真实业务组件目录：`src/components/common/`（通用业务组件）、`src/components/{domain}/`（域内组件）
 - 禁止生成：
   - 禁止直接从 `ant-design-vue` 导入组件，必须从 `dcgj-ui` 导入
   - 禁止使用 antd 原始组件绕过 Dcgj 封装层（如直接用 antd `Table` 替代 `DcgjTable`）
@@ -86,7 +86,7 @@ related:
 
 ### 2.3 模块内组件层 / 页面层
 
-- 模块内组件（`src/components/ops/{domain}/` 或 `src/components/{domain}/`）：服务单个业务领域，不污染全局
+- 模块内组件（`src/components/{domain}/`）：服务单个业务领域，不污染全局
 - 页面层（`src/views/`）：路由级容器，组合业务组件，不承载可复用 UI 实现
 
 ---

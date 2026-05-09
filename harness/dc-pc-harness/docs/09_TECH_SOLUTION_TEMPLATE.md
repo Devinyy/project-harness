@@ -35,9 +35,9 @@ related:
 | 模板术语 | 本项目对应位置 |
 |----------|---------------|
 | 页面层 / views | `src/views/{context}/` |
-| 业务组件 | `src/components/{domain}/{context}/` 或 `src/components/ops/{domain}/` |
+| 业务组件 | `src/components/{domain}/` 或 `src/components/{domain}/{context}/` |
 | 通用组件 | `src/components/common/` |
-| 逻辑层 / composable | `src/composables/` 或 `src/composables/ops/` |
+| 逻辑层 / composable | `src/composables/` |
 | API 层 | `src/api/domain.ts` + `domain.definitions.ts` + `domain.xxx.mapper.ts` |
 | 类型层 | `src/types/domain.ts` |
 | 状态层 | `src/stores/`（子应用）或 `src/store/modules/`（micro-main，危险区） |
@@ -209,7 +209,7 @@ related:
   ↓ request（@platform/http-client）
 api/domain.ts（接口函数 + mapper）
   ↓
-composable（useOps{Domain}ListQuery / use{Domain}Query 等）
+composable（use{Domain}ListQuery / use{Domain}Query 等）
   ↓ reactive state
 views（解构 composable）
   ↓ props / emit
@@ -384,8 +384,8 @@ src/
 │   ├── {domain}Table.vue
 │   └── {domain}XxxModal.vue
 ├── components/common/                       # 如有跨域复用组件
-├── composables/[ops/]                       # 新增 composable
-│   └── useOps{Domain}ListQuery.ts
+├── composables/                             # 新增 composable
+│   └── use{Domain}ListQuery.ts
 ├── api/
 │   ├── domain.ts                            # 接口函数
 │   ├── domain.definitions.ts               # 后端 DTO 类型

@@ -176,7 +176,7 @@ related:
 - 同类表单
 - 同类列表
 - 同类详情抽屉 / 弹窗
-- 同类 composable / api 组织方式（`composables/ops/` 或 `composables/`，`api/domain.ts` 文件）
+- 同类 composable / api 组织方式（`composables/`，`api/domain.ts` 文件）
 
 方案中必须说明：
 

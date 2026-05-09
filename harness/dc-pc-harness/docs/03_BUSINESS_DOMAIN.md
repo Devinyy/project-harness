@@ -23,6 +23,7 @@ related:
 | 商家管理 | 商家入驻审核、信息维护、状态管理 | 运营人员 | app-merchant |
 | 商品中心 | 商品上下架审核、价格规则配置 | 运营人员 | app-product |
 | 系统管理 | 账号、角色、权限配置 | 系统管理员 | app-system |
+| 组织账号 | <!-- TODO: 待确认业务范围 --> | <!-- TODO --> | app-org-account |
 | 认证授权 | 登录、token、菜单下发 | 所有用户 | micro-main |
 
 ---

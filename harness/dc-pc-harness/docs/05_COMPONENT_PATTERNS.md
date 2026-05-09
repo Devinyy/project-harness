@@ -33,9 +33,9 @@ related:
 |------|------|
 | `src/views/{context}/` | 路由入口页面，只做组件组合与弹层局部状态 |
 | `src/components/common/` | 跨领域通用组件，无具体业务上下文 |
-| `src/components/ops/{domain}/` | 域内业务组件（app-product，按领域平铺） |
+| `src/components/{domain}/` | 域内业务组件（app-product，按领域平铺） |
 | `src/components/{domain}/{context}/` | 域内业务组件（app-merchant，按 list/detail/form/shared 细分） |
-| `src/composables/` 或 `src/composables/ops/` | 纯逻辑 composable，不含模板 |
+| `src/composables/` | 纯逻辑 composable，不含模板 |
 
 ### 不要使用的写法
 
@@ -67,11 +67,11 @@ related:
 - 管理弹层的 open/loading/record 等纯展示状态
 - 不写请求逻辑，不写字段转换
 
-典型结构（参考 `views/ops/product/list.vue`）：
+典型结构（参考 `views/product/list.vue`）：
 
 ```vue
 <template>
-  <section class="ops-product-list">
+  <section class="product-list">
     <ProductSearchForm :draft="draftQuery" @search="search" @reset="reset" />
     <ProductTable :products="products" :loading="loading" @offline="openOfflineModal" />
     <ProductOfflineConfirmModal :open="offlineConfirmOpen" @confirm="confirmOfflineProduct" />
@@ -80,12 +80,12 @@ related:
 
 <script setup lang="ts">
   import { ref } from 'vue';
-  import ProductSearchForm from '@/components/ops/product/ProductSearchForm.vue';
-  import ProductTable from '@/components/ops/product/ProductTable.vue';
-  import ProductOfflineConfirmModal from '@/components/ops/product/ProductOfflineConfirmModal.vue';
-  import { useOpsProductListQuery } from '@/composables/ops/useOpsProductListQuery';
+  import ProductSearchForm from '@/components/product/ProductSearchForm.vue';
+  import ProductTable from '@/components/product/ProductTable.vue';
+  import ProductOfflineConfirmModal from '@/components/product/ProductOfflineConfirmModal.vue';
+  import { useProductListQuery } from '@/composables/useProductListQuery';
 
-  const { products, loading, draftQuery, search, reset, offlineProduct } = useOpsProductListQuery();
+  const { products, loading, draftQuery, search, reset, offlineProduct } = useProductListQuery();
 
   // 弹层状态：只有 open/loading/record，不含业务逻辑
   const offlineConfirmOpen = ref(false);
@@ -96,7 +96,7 @@ related:
 </script>
 ```
 
-### 2.2 域内业务组件（`src/components/ops/{domain}/` 或 `src/components/{domain}/{context}/`）
+### 2.2 域内业务组件（`src/components/{domain}/` 或 `src/components/{domain}/{context}/`）
 
 职责：
 - 服务单个业务领域的可复用组件片段
@@ -104,7 +104,7 @@ related:
 - 通过 props 接收数据，通过 emit 发出用户操作
 - 不直接调用 API，不持有全局 store
 
-app-product 采用平铺命名（`components/ops/price-rule/PriceRuleTable.vue`）。
+app-product 采用 `components/{domain}/` 平铺命名（`product/`、`price-rule/`）。
 
 app-merchant 采用按页面分组（`components/merchant/detail/`、`components/merchant/form/`、`components/merchant/list/`、`components/merchant/shared/`）。
 
@@ -127,37 +127,31 @@ app-merchant 采用按页面分组（`components/merchant/detail/`、`components
 ```text
 src/
 ├── views/
-│   └── ops/
-│       ├── product/
-│       │   ├── list.vue          # 商品列表页
-│       │   └── detail.vue        # 商品详情页
-│       └── price-rule/
-│           ├── list.vue
-│           ├── detail.vue
-│           └── form.vue
+│   ├── product/
+│   │   ├── list.vue
+│   │   └── detail.vue
+│   └── price-rule/
+│       ├── list.vue
+│       ├── detail.vue
+│       └── form.vue
 ├── components/
 │   ├── common/
-│   │   ├── StatusTag.vue         # 跨域状态标签
-│   │   ├── PriceText.vue         # 价格展示
+│   │   ├── StatusTag.vue
+│   │   ├── PriceText.vue
 │   │   └── CommonRemotePagedSelect.vue
-│   └── ops/
-│       ├── product/
-│       │   ├── ProductSearchForm.vue
-│       │   ├── ProductTable.vue
-│       │   ├── ProductDetailSectionCard.vue
-│       │   ├── ProductOfflineConfirmModal.vue
-│       │   └── ...
-│       └── price-rule/
-│           ├── PriceRuleSearchForm.vue
-│           ├── PriceRuleTable.vue
-│           ├── PriceRuleDetailPanel.vue
-│           └── ...
-├── composables/
-│   └── ops/
-│       ├── useOpsProductListQuery.ts
-│       ├── useOpsProductDetail.ts
-│       ├── useOpsPriceRuleForm.ts
+│   ├── product/
+│   │   ├── ProductSearchForm.vue
+│   │   ├── ProductTable.vue
+│   │   └── ...
+│   └── price-rule/
+│       ├── PriceRuleSearchForm.vue
 │       └── ...
+├── composables/
+│   ├── useProductListQuery.ts
+│   ├── useProductDetail.ts
+│   ├── usePriceRuleListQuery.ts
+│   ├── usePriceRuleForm.ts
+│   └── usePriceRuleSelection.ts
 ├── api/
 ├── types/
 └── router/
@@ -240,7 +234,7 @@ Composable 不负责：
 
 | App | 模式 | 例子 |
 |-----|------|------|
-| app-product | `useOps{Domain}{Purpose}` | `useOpsProductListQuery`、`useOpsPriceRuleForm` |
+| app-product | `use{Domain}{Purpose}` | `useProductListQuery`、`usePriceRuleForm` |
 | app-merchant | `use{Domain}{Purpose}` | `useMerchantQuery`、`useMerchantDetail`、`useMerchantForm` |
 
 新增 composable 时参照同 app 已有命名。
@@ -248,7 +242,7 @@ Composable 不负责：
 ### 5.3 标准结构
 
 ```typescript
-export function useOpsDomainListQuery() {
+export function use{Domain}ListQuery() {
   const route = useRoute();
   const router = useRouter();
 
@@ -335,7 +329,7 @@ const emit = defineEmits<{
 典型组件组合：
 
 ```text
-views/ops/product/list.vue
+views/product/list.vue
 ├── ProductSearchForm.vue      # 筛选栏（含状态 Tab）
 ├── ProductTable.vue           # 表格（含分页、排序、批量操作）
 ├── ProductOfflineConfirmModal # 下架确认弹层
@@ -354,7 +348,7 @@ Page 只管：弹层 open/close + 弹层 loading；列表数据逻辑全部在 c
 典型组件组合：
 
 ```text
-views/ops/product/detail.vue
+views/product/detail.vue
 ├── DcgjBread                  # 面包屑
 ├── ProductAuditBanner.vue     # 审核状态横幅（可选）
 ├── ProductInfoSectionCard.vue # 基本信息区块
@@ -383,7 +377,7 @@ views/merchant/form.vue
 
 约定：
 - 大表单按业务语义拆成多个 Section 组件
-- 编辑态进入时调详情接口回填，`useMerchantForm` / `useOpsPriceRuleForm` 封装
+- 编辑态进入时调详情接口回填，`useMerchantForm` / `usePriceRuleForm` 封装
 - 提交中禁用提交按钮（`submitting` 状态）
 - app-merchant 有 `useUnsavedChangesGuard` 未保存离开提示
 
@@ -526,5 +520,5 @@ views/merchant/form.vue
 - [x] 组件语法（`<script setup lang="ts">`）已确认
 - [x] Composable 命名规则已从真实文件提取
 - [x] 无 `features/` 和 `shared/` 目录已确认
-- [x] 页面组件结构已对照 `views/ops/product/list.vue` 验证
+- [x] 页面组件结构已对照 `views/product/list.vue` 验证
 - [x] 最后校验日期已更新（2026-05-08）
