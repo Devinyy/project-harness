@@ -23,7 +23,9 @@
         "06_UI_COMPONENT_GUIDE.md",
         "07_API_CONTRACTS.md",
         "08_TASK_PLAYBOOKS.md",
-        "12_TROUBLESHOOTING.md"
+        "12_TROUBLESHOOTING.md",
+        "13_BUGFIX_PRECHECK_GUIDELINE.md",
+        "14_FEISHU_BUG_WORKFLOW.md"
       ]
     },
     "advanced": {
@@ -206,6 +208,31 @@
         "线上故障"
       ],
       "reading_order": 13
+    },
+    {
+      "file": "13_BUGFIX_PRECHECK_GUIDELINE.md",
+      "level": "optional",
+      "purpose": "Bug 修复前功能梳理、影响范围确认、修复方案约束、验证清单和提交说明要求",
+      "task_triggers": [
+        "修 Bug",
+        "修改业务页面",
+        "修改表单或表格",
+        "修改公共组件",
+        "回归验证"
+      ],
+      "reading_order": 14
+    },
+    {
+      "file": "14_FEISHU_BUG_WORKFLOW.md",
+      "level": "optional",
+      "purpose": "飞书 Bug 表读取、字段解析、条件筛选、记录详情读取、修复后状态回写的标准流程",
+      "task_triggers": [
+        "读取飞书 Bug 表",
+        "筛选指派 Bug",
+        "修复飞书 Bug",
+        "更新飞书 Bug 状态"
+      ],
+      "reading_order": 15
     }
   ],
   "examples_files": [
@@ -281,6 +308,8 @@
     ],
     "修 Bug": [
       "12_TROUBLESHOOTING.md",
+      "13_BUGFIX_PRECHECK_GUIDELINE.md",
+      "14_FEISHU_BUG_WORKFLOW.md",
       "11_DANGEROUS_AREAS.md",
       "08_TASK_PLAYBOOKS.md"
     ],

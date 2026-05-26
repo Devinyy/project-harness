@@ -1,0 +1,9 @@
+# Claude Code 个人配置（不提交到 git）
+.claude/settings.local.json
+
+# Codex 个人配置
+.codex/config.local.toml
+
+# OS
+.DS_Store
+Thumbs.db

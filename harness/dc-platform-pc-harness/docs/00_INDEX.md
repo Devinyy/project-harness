@@ -23,6 +23,8 @@ related:
   - 10_TECH_SOLUTION_PLAYBOOK.md
   - 11_DANGEROUS_AREAS.md
   - 12_TROUBLESHOOTING.md
+  - 13_BUGFIX_PRECHECK_GUIDELINE.md
+  - 14_FEISHU_BUG_WORKFLOW.md
 ---
 
 ## 0. 当前初始化状态
@@ -44,6 +46,8 @@ related:
 | `10_TECH_SOLUTION_PLAYBOOK.md` | ✅ 已填写 | 已适配本项目（terminology、api层、composable、packages/触发条件）|
 | `11_DANGEROUS_AREAS.md` | ✅ 已填写 | 已补充真实危险区路径 |
 | `12_TROUBLESHOOTING.md` | ✅ 已填写 | 已适配本项目（pnpm 命令、微前端排障、token链路、URL状态同步）|
+| `13_BUGFIX_PRECHECK_GUIDELINE.md` | ✅ 已填写 | Bug 修复前功能梳理、影响范围确认与修复后验证规范 |
+| `14_FEISHU_BUG_WORKFLOW.md` | ✅ 已填写 | 飞书 Bug 表读取、筛选、修复流转与状态回写流程 |
 
 ---
 
@@ -146,9 +150,11 @@ related:
 推荐顺序：
 
 1. `12_TROUBLESHOOTING.md`（待填写）
-2. `11_DANGEROUS_AREAS.md`
-3. `02_ARCHITECTURE.md`
-4. `07_API_CONTRACTS.md`（待填写）
+2. `13_BUGFIX_PRECHECK_GUIDELINE.md`
+3. `14_FEISHU_BUG_WORKFLOW.md`
+4. `11_DANGEROUS_AREAS.md`
+5. `02_ARCHITECTURE.md`
+6. `07_API_CONTRACTS.md`（待填写）
 
 ---
 
@@ -192,6 +198,12 @@ UI 选型：dcgj-ui 优先原则，弹层/表格/表单/反馈态选型规则。
 
 ### `12_TROUBLESHOOTING.md`
 排障手册：启动失败、白屏、token 失效、微前端通信异常等问题排查路径。（待填写）
+
+### `13_BUGFIX_PRECHECK_GUIDELINE.md`
+Bug 修复前检查规范：修复前梳理已有功能、影响范围、关联操作、依赖与边界状态，修复后按清单验证并沉淀提交说明。
+
+### `14_FEISHU_BUG_WORKFLOW.md`
+飞书 Bug 工作流：使用 lark-cli 从飞书 Wiki/Base 读取 Bug 表、解析字段、筛选记录、修复后回写状态的标准流程。
 
 ### `dcgj-components/`
 Dcgj UI 组件文档：12 个核心封装组件的 API 说明，见 `dcgj-components/COMPONENT_INDEX.md`。

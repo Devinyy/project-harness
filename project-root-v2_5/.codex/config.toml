@@ -1,0 +1,44 @@
+# .codex/config.toml — 项目级 Codex 配置
+
+# --- 行为 ---
+# model 不在项目级指定，由个人 ~/.codex/config.toml 配置
+approval_policy = "on-request"
+
+# --- 上下文管理 ---
+project_doc_max_bytes = 4000
+project_doc_fallback_filenames = ["CLAUDE.md"]
+
+# --- Hooks ---
+# 需要在 ~/.codex/config.toml 中开启：
+# [features]
+# codex_hooks = true
+
+[[hooks.SessionStart]]
+
+[[hooks.SessionStart.hooks]]
+type = "command"
+command = 'bash scripts/doctor.sh'
+timeout = 10
+
+[[hooks.PreToolUse]]
+matcher = "^Bash$"
+
+[[hooks.PreToolUse.hooks]]
+type = "command"
+command = 'bash .codex/hooks/block-dangerous-commands.sh'
+timeout = 10
+
+[[hooks.PostToolUse]]
+matcher = "^Bash$"
+
+[[hooks.PostToolUse.hooks]]
+type = "command"
+command = 'bash .codex/hooks/format-on-write.sh'
+timeout = 15
+
+[[hooks.Stop]]
+
+[[hooks.Stop.hooks]]
+type = "command"
+command = 'bash .codex/hooks/verify-before-stop.sh'
+timeout = 30
