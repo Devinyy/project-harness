@@ -2,13 +2,17 @@
 # 环境 / 完整性预检。两种模式：
 #   - 自检模式 (self)    ：当前目录是 harness 包本身（有 spec-templates 且无 package.json）→ 检查 harness 自身是否健康
 #   - 项目模式 (project) ：当前目录是接入了 harness 的业务项目根 → 检查环境 + specs 就绪度
-# 自动判定，可用 --self / --project 强制。SessionStart hook 与手动执行均可。
+# 自动判定，可用 --self / --project 强制。--strict：把"specs 未填/占位残留"从警告升级为失败（团队/CI 闸门）。
+# SessionStart hook 与手动执行均可。
 
-MODE=""
-case "${1:-}" in
-  --self) MODE=self ;;
-  --project) MODE=project ;;
-esac
+MODE=""; STRICT=0
+for arg in "$@"; do
+  case "$arg" in
+    --self) MODE=self ;;
+    --project) MODE=project ;;
+    --strict) STRICT=1 ;;
+  esac
+done
 if [ -z "$MODE" ]; then
   if [ -d "spec-templates" ] && [ ! -f "package.json" ]; then MODE=self; else MODE=project; fi
 fi
@@ -97,13 +101,21 @@ fi
 [ -d ".codex/hooks" ] && echo "✅ .codex/hooks/" || warn "缺少 .codex/hooks/"
 
 # specs 就绪度 —— 以 docs/specs/00_PROJECT_FACTS.md 是否存在为准（不看目录是否存在）
+# 默认 specs 未填只是警告（适合草稿期）；--strict 下升级为失败（适合团队/CI 强约束）
+specs_gate() { if [ "$STRICT" -eq 1 ]; then err "$1"; else warn "$1"; fi; }
 if [ -f "docs/specs/00_PROJECT_FACTS.md" ]; then
   echo "✅ docs/specs/00_PROJECT_FACTS.md（specs 已初始化）"
-  [ -f "docs/specs/dangerous-zones.txt" ] && echo "✅ docs/specs/dangerous-zones.txt（驱动危险区 hook）" || warn "缺少 docs/specs/dangerous-zones.txt，危险区 hook 用通用兜底，建议补齐"
+  [ -f "docs/specs/dangerous-zones.txt" ] && echo "✅ docs/specs/dangerous-zones.txt（驱动危险区 hook）" || specs_gate "缺少 docs/specs/dangerous-zones.txt，危险区 hook 用通用兜底，建议补齐"
   [ -f "docs/specs/INDEX.md" ] && echo "✅ docs/specs/INDEX.md" || warn "缺少 docs/specs/INDEX.md"
-  grep -rl '<填写' docs/specs >/dev/null 2>&1 && warn "docs/specs 仍有 <填写：…> 占位符未填，运行 /init-specs 或手动补齐"
+  if grep -rl '<填写' docs/specs >/dev/null 2>&1; then
+    n=$(grep -rl '<填写' docs/specs | wc -l | tr -d ' ')
+    specs_gate "docs/specs 仍有 <填写：…> 占位符未填（$n 个文件），运行 /init-specs 或手动补齐"
+  fi
+  if grep -rlE '^status:\s*(draft|template)' docs/specs >/dev/null 2>&1; then
+    specs_gate "docs/specs 仍有 status: draft/template 未复核的文档，复核后改 active"
+  fi
 else
-  warn "specs 未初始化 —— 运行 bash scripts/init-specs.sh（任意 agent）或 /init-specs（Claude Code）生成 docs/specs/"
+  specs_gate "specs 未初始化 —— 运行 bash scripts/init-specs.sh（任意 agent）或 /init-specs（Claude Code）生成 docs/specs/"
 fi
 
 # hooks 执行权限

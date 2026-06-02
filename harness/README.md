@@ -1,11 +1,14 @@
-# Project Harness v2.8（通用 · specs 外置 + 自动生成）
+# Project Harness（通用 · specs 外置 + 自动生成）
+
+**版本：v2.8.1**　·　完整变更见 [`CHANGELOG.md`](./CHANGELOG.md)
 
 把项目规格（specs）转化为可执行的 AI agent 约束（harness）。支持 Claude Code / Codex / Cursor / Windsurf。
 
-**v2.8 的核心变化：harness 不再内置任何项目的 specs，只保留「生成规则」。**
+**核心理念：harness 不内置任何项目的真实 specs，只带「生成规则」（`spec-templates/`）。**
 - specs 由每个项目在自己根目录的 `docs/specs/` 维护。
-- 接入新项目时：若 `docs/specs/` **不存在** → 运行 `/init-specs`，agent 按 `spec-templates/` 规则**探索整个项目自动生成初版**；若**已存在** → 直接复用其内容。
-- 危险区等机制由 specs **驱动**（hook 读 `docs/specs/dangerous-zones.txt`），harness 本体保持通用、可移植。
+- **是否「已初始化」一律以 `docs/specs/00_PROJECT_FACTS.md` 是否存在为准**（不看 `docs/specs/` 目录是否存在——空目录不算已初始化）。
+  - 未初始化 → 见下方「初始化」；已初始化 → agent 先读 `00_PROJECT_FACTS.md` + `INDEX.md`，其余按需查阅。
+- 危险区等机制由 specs **驱动**（hook 读 `docs/specs/dangerous-zones.txt`、类型检查读 `docs/specs/verify.cmd`），harness 本体保持通用、可移植。
 
 ## 目录布局（harness 内容直接放项目根）
 
@@ -39,32 +42,38 @@
 
 > 模版放在**可见的根目录 `spec-templates/`**（不藏在 `.claude/` 下），Codex / Cursor / 人都能直接看到用到；脚手架 `scripts/init-specs.sh` 也在可见的 `scripts/`，跨 agent 通用。
 
-> **模版骨架 = 精炼版（A）**：保留真实项目的章节结构，正文挖空为 `<填写：…>` 占位符 + flavor 固定常量（栈/危险区/约定）。`/init-specs` 把骨架复制进 `docs/specs/` 再按真实代码填充。丢一个 harness-v2.8 文件夹即自带全部生成依赖，无外部依赖。
+> **模版骨架 = 精炼版（A）**：保留真实项目的章节结构，正文挖空为 `<填写：…>` 占位符 + flavor 固定常量（栈/危险区/约定）。丢一个 harness 文件夹即自带全部生成依赖，无外部依赖。
 
 ## 接入一个项目
 
 ```bash
-# 1. 把本 harness 的内容放到项目根（.claude/.codex/CLAUDE.md/AGENTS.md/scripts/.cursor/.windsurfrules）
+# 1. 把本 harness 的内容放到项目根（.claude/.codex/CLAUDE.md/AGENTS.md/scripts/.cursor/.windsurfrules/spec-templates）
 # 2. 加执行权限
 chmod +x .claude/hooks/*.sh .codex/hooks/*.sh scripts/*.sh
-# 3. 环境检查（会提示 docs/specs 是否存在）
+# 3. 环境检查（项目模式会提示 docs/specs 是否就绪）
 bash scripts/doctor.sh
-# 4a. 若已有现成 specs → 放到项目根 docs/specs/（见 ready-specs 包）
-# 4b. 若没有 → 在 Claude Code 中：
-claude
-/init-specs
+# 4a. 若已有现成 specs → 放到项目根 docs/specs/
+# 4b. 若没有 → 初始化（见下，按所用 agent 二选一）
 ```
 
-`/init-specs` 会：判断项目类型（PC 微前端 / uni-app 多端）→ 探索代码 → 按对应 flavor 规则生成 `docs/specs/`（含 `00_PROJECT_FACTS.md`、`INDEX.md`、`02..12`、`dangerous-zones.txt`、关键目录的 `AGENTS.md`）。生成物标 `status: draft`，请人工复核。
+**初始化分两步——脚手架（确定性）+ 填充（需 agent）：**
 
-> 已有现成 specs 的两个项目（dc-platform / ecm-welfare）见随附 **ready-specs** 包，直接把对应目录放进各自项目根即可，`/init-specs` 会识别已存在并跳过。
+| 步骤 | Claude Code | Codex / Cursor / Windsurf / 人 |
+|------|-------------|-------------------------------|
+| ① 脚手架：探测 flavor、复制骨架到 `docs/specs/`、镜像放置目录级 AGENTS、生成 `dangerous-zones.txt`/`verify.cmd` | 由 `/init-specs` 内部调用 | **手动**：`bash scripts/init-specs.sh` |
+| ② 填充：探索真实代码、替换 `<填写：…>` 占位符、校准 `dangerous-zones.txt` | `/init-specs` 接着**自动完成** | **手动**：让 agent「按 `docs/specs/_RULE.md` 填充 docs/specs 占位符」 |
+
+> ⚠️ **`scripts/init-specs.sh` 只做第①步（复制骨架），不填充内容**——产物全是 `<填写：…>` 占位符。只有 Claude Code 的 `/init-specs` 会接着自动做第②步探索+填充。其它 agent 需自己驱动填充。
+> 生成物 frontmatter 标 `status: draft`，**人工复核后改 `active`**；复核可用 `bash scripts/doctor.sh --strict` 闸门（占位符/草稿未清则 fail）。
+
+> 已有现成 specs 的项目（如 dc-platform / ecm-welfare）直接把整理好的 `docs/specs/` 放进项目根即可——脚手架与 `/init-specs` 检测到 `00_PROJECT_FACTS.md` 存在会自动跳过。
 
 ## specs 驱动机制
 
 | 机制 | 来源 | 说明 |
 |------|------|------|
 | 危险区拦截 | `docs/specs/dangerous-zones.txt` | guard hook 逐行子串匹配；缺失时用内置通用兜底 |
-| 类型检查 | `vue-tsc --noEmit` | 两类项目都是 Vue，用 vue-tsc（非 tsc）|
+| 类型检查命令 | `docs/specs/verify.cmd` | verify hook 读它；缺失时探测 package.json 脚本（lint:type/validate/…），再兜底 `pnpm exec vue-tsc --noEmit` |
 | box-sizing 校验 | uni-app 项目门禁 | 仅当 `src/pages.json` 存在时启用 |
 | 按需查阅 | `docs/specs/00_PROJECT_FACTS.md` + `INDEX.md` | agent 先读事实，再按需 grep 其余 |
 
@@ -77,7 +86,7 @@ claude
 | block-dangerous-commands.sh | PreToolUse | 拦截 rm -rf / force push / 装包 / npx / curl |
 | format-on-write.sh | PostToolUse | prettier（含 `.vue`）|
 | check-box-sizing.sh | PostToolUse | padding 块需 `box-sizing`（仅 uni-app 项目）|
-| verify-before-stop.sh | Stop | `vue-tsc` + 改动摘要（Codex 版含格式化兜底 + 读 dangerous-zones.txt 危险区扫描）|
+| verify-before-stop.sh | Stop | 类型检查（命令来自 `docs/specs/verify.cmd`，缺失则探测脚本/兜底 vue-tsc）+ 改动摘要（Codex 版含格式化兜底 + 读 dangerous-zones.txt 危险区扫描）|
 
 ## Claude Code 与 Codex 差异
 
@@ -98,16 +107,4 @@ claude
 
 ## Changelog
 
-### v2.8
-- **specs 外置 + 自带模版骨架**：harness 不内置真实 specs，改为 `spec-templates/`，含 SCHEMA + PC/uni-app 两套**全覆盖骨架**（00..12 + INDEX + dangerous-zones.txt + 组件库索引 + examples + skills-reference + 目录级 AGENTS），A 精炼版（结构保留、正文占位）
-- 新增 `/init-specs`：选 flavor → 复制骨架到 `docs/specs/` → 探索真实代码填充（含校准 `dangerous-zones.txt` 与镜像放置目录级 AGENTS）
-- 危险区改为 specs 驱动：guard / codex verify 读 `docs/specs/dangerous-zones.txt`，缺失时通用兜底
-- doctor.sh：检测 `docs/specs` 缺失 → 提示运行 `/init-specs`
-- CLAUDE.md/AGENTS.md/commands 通用化（不再内联具体项目事实）
-- 两套现成 specs（dc-platform / ecm-welfare）移出 harness，单独以 ready-specs 包分发
-
-### v2.7（统一版）
-- 整合 dc-platform + ecm-welfare 两个不同栈 Vue3 项目；hooks 项目自适应（vue-tsc / box-sizing / 危险区并集）
-
-### v2.6 / v2.5 / v2.4 / v2.3 / v2.0
-- 角色/上下文纪律/失败熔断；commands 引用 CLAUDE.md；npx→pnpm exec、JSON 消毒、格式化兜底；doctor SessionStart、/review；从 specs 体系重构为 harness。
+完整变更记录见 [`CHANGELOG.md`](./CHANGELOG.md)。当前版本 **v2.8.1**（在 v2.8 基础上做接入健壮性修复：类型检查命令可配置、危险区扫描健壮化、Codex matcher 放宽并加校验说明、初始化语义与文档统一、doctor 增 `--strict`）。
