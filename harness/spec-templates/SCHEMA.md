@@ -19,6 +19,7 @@
 | `11_DANGEROUS_AREAS.md` | 风险分级 + 危险区清单（路径+为什么危险+改动前必做+红线）|
 | `12_TROUBLESHOOTING.md` | 已知问题与解法、调试入口 |
 | `dangerous-zones.txt` | **机器可读**危险区路径清单，一行一个子串，`#` 注释；hooks 读取 |
+| `verify.cmd` | **机器可读**类型检查命令（首行非注释）；verify-before-stop hook 读取；`init-specs.sh` 自动探测写入，人工核对（如 monorepo filter）|
 | 目录级 `AGENTS.md` | 在 flavor 列出的关键目录下生成局部约束 |
 
 ## 文档头部（每份 md）

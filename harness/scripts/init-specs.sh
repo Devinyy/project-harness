@@ -71,7 +71,25 @@ if [ -d "$DIR/AGENTS" ]; then
   done < <(find "$DIR/AGENTS" -name 'AGENTS.md' -print0)
 fi
 
-# 4. 放一份填充指引供任意 agent 参考
+# 4. 探测并写入类型检查命令（verify-before-stop hook 读取，避免写死 vue-tsc）
+if [ ! -f "$SPECS/verify.cmd" ]; then
+  VCMD="pnpm exec vue-tsc --noEmit"
+  if [ -f package.json ]; then
+    for s in lint:type validate type-check typecheck check; do
+      if jq -e --arg s "$s" '.scripts[$s] // empty' package.json >/dev/null 2>&1; then
+        VCMD="pnpm run $s"; break
+      fi
+    done
+  fi
+  {
+    echo "# 本项目类型检查命令（verify-before-stop hook 读取首行非注释）"
+    echo "# 自动探测自 package.json，按真实情况修正（如 monorepo filter）"
+    echo "$VCMD"
+  } > "$SPECS/verify.cmd"
+  echo "✅ 写入 $SPECS/verify.cmd → $VCMD（请人工确认）"
+fi
+
+# 5. 放一份填充指引供任意 agent 参考
 cp "$DIR/RULE.md" "$SPECS/_RULE.md"
 
 cat <<'EOF'

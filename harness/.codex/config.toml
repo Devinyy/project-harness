@@ -12,6 +12,13 @@ project_doc_fallback_filenames = ["CLAUDE.md"]
 # 需要在 ~/.codex/config.toml 中开启：
 # [features]
 # codex_hooks = true
+#
+# ⚠️ 待你按所装 Codex 版本核验（本配置未在真实 Codex 上验证）：
+#   1) hooks 协议字段名（SessionStart/PreToolUse/PostToolUse/Stop、matcher、type/command/timeout）是否与你的 Codex 版本一致；
+#   2) PreToolUse/PostToolUse 的 matcher —— 下面用 "Bash" 匹配执行命令的工具，但部分 Codex 版本工具名是
+#      exec_command / shell / local_shell。若拦截不生效，把 matcher 改成你版本的真实工具名。
+#   hooks 脚本内部已用 `jq '.tool_input.command // empty'` 自过滤：matcher 偏宽不会误伤（非命令工具会直接放行），
+#   偏窄才会“看起来配了其实没拦”。校验方法：执行一条 `rm -rf x` 看是否被 block-dangerous-commands 拦下。
 
 [[hooks.SessionStart]]
 
@@ -21,7 +28,7 @@ command = 'bash scripts/doctor.sh'
 timeout = 10
 
 [[hooks.PreToolUse]]
-matcher = "^Bash$"
+matcher = "Bash|shell|exec_command|local_shell"
 
 [[hooks.PreToolUse.hooks]]
 type = "command"
@@ -29,7 +36,7 @@ command = 'bash .codex/hooks/block-dangerous-commands.sh'
 timeout = 10
 
 [[hooks.PostToolUse]]
-matcher = "^Bash$"
+matcher = "Bash|shell|exec_command|local_shell"
 
 [[hooks.PostToolUse.hooks]]
 type = "command"

@@ -8,11 +8,30 @@ if [ "$(echo "$INPUT" | jq -r '.stop_hook_active // false')" = "true" ]; then
   exit 0
 fi
 
+# 解析本项目的类型检查命令（issue: 不要写死 vue-tsc）
+# 优先级：docs/specs/verify.cmd（init-specs 生成）→ package.json 脚本探测 → 兜底 vue-tsc
+resolve_typecheck() {
+  if [ -f docs/specs/verify.cmd ]; then
+    grep -vE '^\s*(#|$)' docs/specs/verify.cmd | head -1
+    return
+  fi
+  if [ -f package.json ]; then
+    local s
+    for s in lint:type validate type-check typecheck check; do
+      if jq -e --arg s "$s" '.scripts[$s] // empty' package.json >/dev/null 2>&1; then
+        echo "pnpm run $s"; return
+      fi
+    done
+  fi
+  echo "pnpm exec vue-tsc --noEmit"
+}
+
 # === 1. 类型检查 ===
-TSC_OUTPUT=$(pnpm exec vue-tsc --noEmit 2>&1)
+TYPECHECK=$(resolve_typecheck)
+TSC_OUTPUT=$(bash -c "$TYPECHECK" 2>&1)
 if [ $? -ne 0 ]; then
   ERRORS=$(echo "$TSC_OUTPUT" | head -15 | tr '"\\' '_')
-  printf '{"continue": true, "hookSpecificOutput": {"hookEventName": "Stop", "additionalContext": "类型检查未通过（vue-tsc），请修复：\n%s"}}\n' "$ERRORS"
+  printf '{"continue": true, "hookSpecificOutput": {"hookEventName": "Stop", "additionalContext": "类型检查未通过（%s）：\n%s"}}\n' "$(printf '%s' "$TYPECHECK" | tr '"\\' '_')" "$ERRORS"
   exit 0
 fi
 
@@ -23,12 +42,10 @@ if [ -n "$CHANGED_FILES" ]; then
 fi
 
 # === 3. 危险区兜底扫描 ===
-# 优先用 docs/specs/dangerous-zones.txt（/init-specs 按项目生成）；缺失时用通用兜底正则
+# 优先用 docs/specs/dangerous-zones.txt；用 grep -F -f 逐行子串匹配（issue: 不要把多行塞给 grep -F "$var"）
 ZONES_FILE="docs/specs/dangerous-zones.txt"
 if [ -f "$ZONES_FILE" ]; then
-  # grep -F 固定字符串匹配，忽略空行与 # 注释
-  PATTERNS=$(grep -vE '^\s*(#|$)' "$ZONES_FILE")
-  DANGER_FILES=$(git diff --name-only HEAD 2>/dev/null | grep -F "$PATTERNS" 2>/dev/null || true)
+  DANGER_FILES=$(git diff --name-only HEAD 2>/dev/null | grep -F -f <(grep -vE '^\s*(#|$)' "$ZONES_FILE") 2>/dev/null || true)
 else
   DANGEROUS_PATTERNS="src/utils/(request|auth)\.ts|src/(main\.ts|App\.vue|router\.ts|uni\.scss)|src/(mixin|oauth2|uni_modules|components/basic|config|constants)/|pages\.json|manifest\.json|apps/micro-main/src/|packages/(http-client|micro-bridge|auth-session|shared-types|shared-utils)/|vite\.config|tsconfig|\.env"
   DANGER_FILES=$(git diff --name-only HEAD 2>/dev/null | grep -E "$DANGEROUS_PATTERNS" || true)
