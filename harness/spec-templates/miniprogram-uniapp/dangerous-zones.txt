@@ -1,0 +1,19 @@
+# uni-app 多端 flavor 危险区模版（典型清单，按真实代码增删）。一行一个子串，# 注释；hooks 读取。
+src/utils/request.ts
+src/utils/auth.ts
+src/main.ts
+src/App.vue
+src/router.ts
+src/mixin/
+pages.json
+manifest.json
+src/config/
+src/constants/config
+src/oauth2/
+src/uni.scss
+src/components/basic/
+src/uni_modules/
+project.config
+vite.config
+tsconfig
+.env

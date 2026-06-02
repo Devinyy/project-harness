@@ -1,0 +1,86 @@
+#!/bin/bash
+# 跨 agent 通用脚手架：探测 flavor → 复制模版骨架到 docs/specs/ → 镜像放置目录级 AGENTS
+# 确定性部分（任何 agent / 人 / CI 都能跑）。占位符 <填写：…> 的「填充」仍需 agent 按 RULE.md 完成。
+#
+# 用法:
+#   bash scripts/init-specs.sh                 # 自动探测 flavor
+#   bash scripts/init-specs.sh --flavor pc     # 强制 PC 微前端
+#   bash scripts/init-specs.sh --flavor mini   # 强制 uni-app 多端
+#   bash scripts/init-specs.sh --force         # 已存在也覆盖
+set -euo pipefail
+
+TPL_ROOT="spec-templates"
+SPECS="docs/specs"
+FLAVOR=""; FORCE=0
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --flavor) FLAVOR="${2:-}"; shift 2 ;;
+    --force)  FORCE=1; shift ;;
+    -h|--help) sed -n '2,12p' "$0"; exit 0 ;;
+    *) echo "未知参数: $1"; exit 2 ;;
+  esac
+done
+
+# 0. 以 00_PROJECT_FACTS.md 是否存在为准（不是看目录是否存在）
+if [ -f "$SPECS/00_PROJECT_FACTS.md" ] && [ "$FORCE" -ne 1 ]; then
+  echo "✋ $SPECS/00_PROJECT_FACTS.md 已存在 → 视为已初始化，跳过（--force 可强制覆盖）"
+  exit 0
+fi
+
+# 1. 探测 flavor
+if [ -z "$FLAVOR" ]; then
+  if [ -d "apps/micro-main" ] || grep -q '@micro-zoe/micro-app' package.json 2>/dev/null || grep -q 'dc-platform' package.json 2>/dev/null; then
+    FLAVOR=pc
+  elif [ -f "src/pages.json" ] || grep -qE '@dcloudio/uni-app|uview-plus' package.json 2>/dev/null; then
+    FLAVOR=mini
+  else
+    echo "⚠️ 无法自动判定项目类型，请用 --flavor pc|mini"; exit 2
+  fi
+fi
+case "$FLAVOR" in
+  pc)   DIR="$TPL_ROOT/pc-microapp" ;;
+  mini) DIR="$TPL_ROOT/miniprogram-uniapp" ;;
+  *) echo "flavor 只能是 pc 或 mini"; exit 2 ;;
+esac
+[ -d "$DIR" ] || { echo "❌ 找不到模版目录 $DIR（请确认在 harness 已就位的项目根运行）"; exit 1; }
+echo "🔎 flavor=$FLAVOR  模版=$DIR"
+
+# 2. 复制骨架 → docs/specs/（排除 RULE.md 与 AGENTS/ 树）
+mkdir -p "$SPECS"
+while IFS= read -r -d '' f; do
+  rel="${f#"$DIR"/}"
+  mkdir -p "$SPECS/$(dirname "$rel")"
+  cp "$f" "$SPECS/$rel"
+done < <(find "$DIR" -type f ! -name 'RULE.md' ! -path "$DIR/AGENTS/*" -print0)
+echo "✅ 已复制规格骨架 → $SPECS/"
+
+# 3. 镜像放置目录级 AGENTS.md（仅当目标目录真实存在、且未占用）
+if [ -d "$DIR/AGENTS" ]; then
+  while IFS= read -r -d '' f; do
+    rel="${f#"$DIR"/AGENTS/}"                 # 例 apps/micro-main/AGENTS.md
+    target_dir="$(dirname "$rel")"
+    if [ -d "$target_dir" ]; then
+      if [ -f "$target_dir/AGENTS.md" ]; then
+        echo "  ↷ 已存在，跳过 $target_dir/AGENTS.md"
+      else
+        cp "$f" "$target_dir/AGENTS.md"; echo "  ✅ $target_dir/AGENTS.md"
+      fi
+    else
+      echo "  ↷ 目标目录不存在，略过 $target_dir/AGENTS.md"
+    fi
+  done < <(find "$DIR/AGENTS" -name 'AGENTS.md' -print0)
+fi
+
+# 4. 放一份填充指引供任意 agent 参考
+cp "$DIR/RULE.md" "$SPECS/_RULE.md"
+
+cat <<'EOF'
+
+── 脚手架完成。下一步「填充」需要 agent / 人来做（脚本不替代）──
+  1. 按 docs/specs/_RULE.md 与 spec-templates/SCHEMA.md，探索真实代码取证
+  2. 逐份替换 docs/specs/ 里的 <填写：…> 占位符；务必校准 docs/specs/dangerous-zones.txt
+  3. 复核后删除 docs/specs/_RULE.md，把各文档 frontmatter 的 status 改 active
+
+  • Claude Code：直接运行 /init-specs，agent 会自动完成探索+填充
+  • Codex / Cursor / Windsurf：先跑本脚本，再让 agent「按 docs/specs/_RULE.md 填充 docs/specs 占位符」
+EOF

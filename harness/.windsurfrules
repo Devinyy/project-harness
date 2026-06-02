@@ -1,0 +1,11 @@
+# Project Harness（大厨管家 · 通用 · specs 外置）
+
+开始前先读 `AGENTS.md` 与 `CLAUDE.md`，并以 `docs/specs/` 作为本项目事实来源：
+- 已存在 → 先读 `docs/specs/00_PROJECT_FACTS.md` 与 `INDEX.md`，其余按需 `head`/`grep`。
+- 不存在 → 按 `spec-templates/` 规则探索项目生成（Claude Code 用 `/init-specs`）。
+
+团队两类项目（harness 通用，由 specs 区分）：PC 微前端类（Vue3 + micro-app + dcgj-ui + @platform/http-client）；uni-app 多端类（uni-app + Vue3 + uview-plus，`#ifdef/#ifndef`）。
+
+通用禁止：React / 非约定 UI 库；裸调接口（走项目的请求封装）；为局部需求改公共/基座/请求封装/认证/全局配置。项目专属禁止项见 `docs/specs/00_PROJECT_FACTS.md`。
+
+不要把示例当成项目事实，以真实代码为准。涉及路由/权限/请求/构建/基座时先读 `docs/specs/11_DANGEROUS_AREAS.md`。

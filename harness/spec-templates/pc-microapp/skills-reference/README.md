@@ -1,0 +1,3 @@
+# skills-reference/（模版骨架）
+
+放代码生成/前端测试/技术方案等流程参考，按实际工作流补充；与 .claude/commands 配合。

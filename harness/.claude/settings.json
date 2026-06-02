@@ -1,0 +1,33 @@
+{
+  "permissions": {
+    "allow": [
+      "Read", "Grep", "Glob",
+      "Bash(pnpm test*)", "Bash(pnpm lint*)", "Bash(pnpm run*)", "Bash(pnpm dev*)", "Bash(pnpm build*)", "Bash(pnpm exec*)",
+      "Bash(npm run lint*)", "Bash(npm run dev*)", "Bash(npm run build*)",
+      "Bash(cat *)", "Bash(head *)", "Bash(tail *)", "Bash(wc *)", "Bash(find *)",
+      "Bash(git status*)", "Bash(git diff*)", "Bash(git log*)", "Bash(git add*)", "Bash(git commit*)"
+    ],
+    "deny": [
+      "Bash(rm -rf*)", "Bash(git reset --hard*)", "Bash(git push --force*)", "Bash(DROP TABLE*)",
+      "Bash(curl *)", "Bash(wget *)", "Bash(npx *)", "Bash(npm install*)", "Bash(pnpm add*)"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      { "hooks": [ { "type": "command", "command": "bash scripts/doctor.sh" } ] }
+    ],
+    "PreToolUse": [
+      { "matcher": "Write|Edit|MultiEdit", "hooks": [ { "type": "command", "command": "bash .claude/hooks/guard-dangerous-zones.sh" } ] },
+      { "matcher": "Bash", "hooks": [ { "type": "command", "command": "bash .claude/hooks/block-dangerous-commands.sh" } ] }
+    ],
+    "PostToolUse": [
+      { "matcher": "Write|Edit|MultiEdit", "hooks": [
+        { "type": "command", "command": "bash .claude/hooks/format-on-write.sh" },
+        { "type": "command", "command": "bash .claude/hooks/check-box-sizing.sh" }
+      ] }
+    ],
+    "Stop": [
+      { "hooks": [ { "type": "command", "command": "bash .claude/hooks/verify-before-stop.sh" } ] }
+    ]
+  }
+}
