@@ -8,10 +8,10 @@
 |------|----------|
 | `INDEX.md` | 文档索引 + 使用纪律（用 head/grep，不 cat 全文；以真实代码为准）|
 | `00_PROJECT_FACTS.md` | 项目名/技术栈/UI 库/包管理器/源码根/别名/启动·构建·类型检查·lint 命令/认证(token key)/API 基址/目录归属/项目专属禁止项 |
-| `02_ARCHITECTURE.md` | 目录结构、模块/子应用/分包、端口、路由组织、构建产物、外部依赖 |
+| `02_ARCHITECTURE.md` | 目录结构、模块/子应用/分包、端口、路由组织、构建产物、外部依赖；**顶部含 harness 固定的「MVVM 通用分层模型」基线（保留不改，项目只补特例）** |
 | `03_BUSINESS_DOMAIN.md` | 业务实体、状态流转、术语、权限/角色 |
 | `04_CODING_STANDARDS.md` | 命名、类型、样式、错误处理、提交规范 |
-| `05_COMPONENT_PATTERNS.md` | 组件拆分与复用、props/事件、状态选择 |
+| `05_COMPONENT_PATTERNS.md` | 组件拆分与复用、props/事件、状态选择；**「拆分原则」是 harness 固定基线（可判定触发条件 + 页面只做编排，保留不改）** |
 | `06_UI_COMPONENT_GUIDE.md` | UI 库选型用法、图标/图片素材规则 |
 | `07_API_CONTRACTS.md` | 请求/响应结构、错误码、接入步骤、DTO→VM |
 | `08_TASK_PLAYBOOKS.md` | 常见任务标准步骤 |
@@ -38,3 +38,4 @@ purpose: <一句话>
 
 ## 纪律
 篇幅克制；路径/端口/字段/命令一律取证；flavor 给的是典型形态，真实值以当前仓库为准。
+`02_ARCHITECTURE` 的「通用分层模型」与 `05_COMPONENT_PATTERNS` 的「拆分原则」是团队固定基线，**填充时保留不改**，只在其下补项目特例。

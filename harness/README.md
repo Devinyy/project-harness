@@ -1,6 +1,6 @@
 # Project Harness（通用 · specs 外置 + 自动生成）
 
-**版本：v2.8.1**　·　完整变更见 [`CHANGELOG.md`](./CHANGELOG.md)
+**版本：v2.9**　·　完整变更见 [`CHANGELOG.md`](./CHANGELOG.md)
 
 把项目规格（specs）转化为可执行的 AI agent 约束（harness）。支持 Claude Code / Codex / Cursor / Windsurf。
 
@@ -9,6 +9,7 @@
 - **是否「已初始化」一律以 `docs/specs/00_PROJECT_FACTS.md` 是否存在为准**（不看 `docs/specs/` 目录是否存在——空目录不算已初始化）。
   - 未初始化 → 见下方「初始化」；已初始化 → agent 先读 `00_PROJECT_FACTS.md` + `INDEX.md`，其余按需查阅。
 - 危险区等机制由 specs **驱动**（hook 读 `docs/specs/dangerous-zones.txt`、类型检查读 `docs/specs/verify.cmd`），harness 本体保持通用、可移植。
+- **架构/组件约定是固定基线**：`spec-templates` 的 `02_ARCHITECTURE`（MVVM 通用分层模型）与 `05_COMPONENT_PATTERNS`（拆分原则）带不随项目改写的固定段，项目只在其上补特例——跨项目架构一致，且组件拆分有可判定规则（配 `check-large-file.sh` 门禁）。
 
 ## 目录布局（harness 内容直接放项目根）
 
@@ -20,7 +21,7 @@
 ├── .claude/                   # Claude Code 专属
 │   ├── settings.json
 │   ├── commands/              #   /init-specs /new-page /debug /refactor /review /tech-solution
-│   └── hooks/                 #   guard（读 dangerous-zones.txt）/ block / format(.vue) / check-box-sizing(uni-app) / verify(vue-tsc)
+│   └── hooks/                 #   guard（读 dangerous-zones.txt）/ block / format(.vue) / check-box-sizing(uni-app) / check-large-file(.vue>500行) / verify(vue-tsc)
 ├── .codex/{config.toml, hooks/}   # Codex 专属
 ├── scripts/
 │   ├── doctor.sh              # 自检/项目双模式：检测环境 + docs/specs 是否就绪
@@ -86,6 +87,7 @@ bash scripts/doctor.sh
 | block-dangerous-commands.sh | PreToolUse | 拦截 rm -rf / force push / 装包 / npx / curl |
 | format-on-write.sh | PostToolUse | prettier（含 `.vue`）|
 | check-box-sizing.sh | PostToolUse | padding 块需 `box-sizing`（仅 uni-app 项目）|
+| check-large-file.sh | PostToolUse | 单 `.vue` > 500 行时提示按 `05_COMPONENT_PATTERNS.md`「拆分原则」拆分（advisory，不回滚）|
 | verify-before-stop.sh | Stop | 类型检查（命令来自 `docs/specs/verify.cmd`，缺失则探测脚本/兜底 vue-tsc）+ 改动摘要（Codex 版含格式化兜底 + 读 dangerous-zones.txt 危险区扫描）|
 
 ## Claude Code 与 Codex 差异
@@ -107,4 +109,4 @@ bash scripts/doctor.sh
 
 ## Changelog
 
-完整变更记录见 [`CHANGELOG.md`](./CHANGELOG.md)。当前版本 **v2.8.1**（在 v2.8 基础上做接入健壮性修复：类型检查命令可配置、危险区扫描健壮化、Codex matcher 放宽并加校验说明、初始化语义与文档统一、doctor 增 `--strict`）。
+完整变更记录见 [`CHANGELOG.md`](./CHANGELOG.md)。当前版本 **v2.9**（在 v2.8.1 基础上：`02_ARCHITECTURE` 补 MVVM 通用分层基线、`05_COMPONENT_PATTERNS` 把拆分原则写成可判定规则、新增巨型文件门禁 `check-large-file.sh`、`/new-page`+`/review` 加拆分预判与组件粒度检查）。

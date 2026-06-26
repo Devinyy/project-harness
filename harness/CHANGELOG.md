@@ -2,6 +2,15 @@
 
 本文件记录 Project Harness 的版本变更。遵循「机制改动写清楚为什么」。
 
+## v2.9 — 通用分层基线 + 组件拆分门禁
+
+针对两个长期缺口：架构模型从未在 harness 层显式表述、页面缺乏拆分约束（实测会写出近千行单文件）。
+
+- **`02_ARCHITECTURE` 增「通用分层模型（MVVM）」固定基线**：两套 flavor 顶部各加一段不随项目改写的分层约定——View / ViewModel / Model / 基础设施四层 + 依赖方向红线 + 各层边界 + 反模式。*为什么*：原 `02_ARCHITECTURE` 通篇 `<填写>` 占位符，MVVM 分层只散落在 `CLAUDE`/`AGENTS` 的零碎规则里、从无一处完整表述，agent 缺统一架构锚点。尊重 flavor 差异：PC 用 Pinia `apps/*/src/store/`，uni-app 禁 stores、只用 composable。
+- **`05_COMPONENT_PATTERNS` 的「拆分原则」从占位符写成可判定规则**：何时必须拆（单 `.vue` > 500 行 / `<template>` ≥3 语义区块 / 重复结构 ≥2 次 / `v-for` item > 30 行 / 弹窗表单）+ 页面只做编排（业务逻辑抽 `useXxxPage`）+ 不要拆过头（小程序 setData/通信开销）。*为什么*：原「拆分原则」是空占位符，且「复用优先/不发明新架构」被 agent 误读成「少新建文件」，正反信号叠加导致巨型页面；显式写明「抽子组件≠发明新架构」调和。
+- **新增 `check-large-file.sh`（PostToolUse，advisory）**：写入 `.vue` > 500 行即提示按拆分原则拆分，exit 2 不回滚，与 `check-box-sizing` 同模式。*为什么*：按 harness 迭代原则「加固 harness 而非改提示词」，给事后纠偏门禁兜底。
+- **`/new-page` 增「拆分预判」步、`/review` 增「组件粒度/巨型文件」检查项**，并同步根 `AGENTS.md` 标准流程与目录级 `AGENTS.md`（Codex/Cursor/Windsurf 同样吃到，不只 Claude）。
+
 ## v2.8.1 — 接入健壮性修复
 
 针对 v2.8 接入真实项目时暴露的问题：

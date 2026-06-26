@@ -9,9 +9,10 @@
    - PC 微前端：`find apps/*/src/views -name "*.vue" | head -10`，确认所属子应用
    - uni-app 多端：`find src/pages -name "*-page.vue" | head -10`，新页面放 `src/pages/<模块>/<xxx>-page.vue`
 3. 确认：路由路径、数据来源（api/service）、状态方式（local/composable/store）、权限要求
-4. 按现有风格创建 Vue 3 SFC（`<script setup lang="ts">`）+ 对应 UI 库（dcgj-ui / uview-plus），覆盖 loading/empty/error/正常渲染
-5. 数据层：PC 经 `@platform/http-client`（`import request from '@/request'`）；uni-app 在 `src/api/<领域>.ts` 经 `@/utils/request`，不要裸 `uni.request`
-6. uni-app 必做：把新页面登记到 `src/pages.json`
-7. 运行 `docs/specs/00_PROJECT_FACTS.md` 中声明的类型检查命令
+4. 拆分预判（写代码前先列结构，避免巨型单文件）：把页面规划成「容器页 + N 个子组件」——模板里 ≥3 个语义区块 / 重复结构 / `v-for` item > ~30 行 / 弹窗表单 都各自成组件；业务逻辑抽到 `useXxxPage` composable，页面只做编排。详见 `docs/specs/05_COMPONENT_PATTERNS.md`「拆分原则」。单文件 > ~500 行视为应拆信号（hook 会提示）。
+5. 按现有风格创建 Vue 3 SFC（`<script setup lang="ts">`）+ 对应 UI 库（dcgj-ui / uview-plus），覆盖 loading/empty/error/正常渲染；按第 4 步清单分别建子组件，页面只负责取数与组合
+6. 数据层：PC 经 `@platform/http-client`（`import request from '@/request'`）；uni-app 在 `src/api/<领域>.ts` 经 `@/utils/request`，不要裸 `uni.request`
+7. uni-app 必做：把新页面登记到 `src/pages.json`
+8. 运行 `docs/specs/00_PROJECT_FACTS.md` 中声明的类型检查命令
 
 需求描述：$ARGUMENTS

@@ -8,6 +8,7 @@
    - 框架红线：React/JSX/TSX、非约定 UI 库；PC 裸 axios/跨 app import/History 路由；uni-app 裸 `uni.request`、未登记 `pages.json`、把内容图当切图
    - 重复造轮子：是否已有同类实现
    - 分层违规：页面裸调接口、组件直接操作 store、api/service 混入 UI
+   - 组件粒度：巨型文件（单 `.vue` > ~500 行）、多区块页面未拆子组件、业务逻辑堆在页面未抽 composable（见 `05_COMPONENT_PATTERNS.md`「拆分原则」）
    - 类型安全：any/类型断言/缺返回类型
    - 响应式与副作用：watch/watchEffect/computed 依赖、onUnmounted 清理、内存泄漏
    - （uni-app）多端：`#ifdef/#ifndef`；padding 块是否 `box-sizing: border-box`
