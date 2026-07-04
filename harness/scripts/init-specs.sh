@@ -10,7 +10,9 @@
 set -euo pipefail
 
 TPL_ROOT="spec-templates"
+TOKEN_TPL_ROOT="token-templates"
 SPECS="docs/specs"
+TOKEN_SPECS="docs/token-specs"
 FLAVOR=""; FORCE=0
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -53,6 +55,21 @@ while IFS= read -r -d '' f; do
   cp "$f" "$SPECS/$rel"
 done < <(find "$DIR" -type f ! -name 'RULE.md' ! -path "$DIR/AGENTS/*" -print0)
 echo "✅ 已复制规格骨架 → $SPECS/"
+
+# 2.1. PC 端设计 token → docs/token-specs/（独立于 docs/specs）
+if [ "$FLAVOR" = "pc" ] && [ -d "$TOKEN_TPL_ROOT/pc" ]; then
+  mkdir -p "$TOKEN_SPECS"
+  while IFS= read -r -d '' f; do
+    rel="${f#"$TOKEN_TPL_ROOT/pc"/}"
+    mkdir -p "$TOKEN_SPECS/$(dirname "$rel")"
+    if [ -f "$TOKEN_SPECS/$rel" ] && [ "$FORCE" -ne 1 ]; then
+      echo "  ↷ token 已存在，跳过 $TOKEN_SPECS/$rel"
+    else
+      cp "$f" "$TOKEN_SPECS/$rel"
+      echo "  ✅ $TOKEN_SPECS/$rel"
+    fi
+  done < <(find "$TOKEN_TPL_ROOT/pc" -type f -print0)
+fi
 
 # 3. 镜像放置目录级 AGENTS.md（仅当目标目录真实存在、且未占用）
 if [ -d "$DIR/AGENTS" ]; then
@@ -97,7 +114,8 @@ cat <<'EOF'
 ── 脚手架完成。下一步「填充」需要 agent / 人来做（脚本不替代）──
   1. 按 docs/specs/_RULE.md 与 spec-templates/SCHEMA.md，探索真实代码取证
   2. 逐份替换 docs/specs/ 里的 <填写：…> 占位符；务必校准 docs/specs/dangerous-zones.txt
-  3. 复核后删除 docs/specs/_RULE.md，把各文档 frontmatter 的 status 改 active
+  3. PC 项目如存在 docs/token-specs/，后续色号、字号以该目录 token 为准
+  4. 复核后删除 docs/specs/_RULE.md，把各文档 frontmatter 的 status 改 active
 
   • Claude Code：直接运行 /init-specs，agent 会自动完成探索+填充
   • Codex / Cursor / Windsurf：先跑本脚本，再让 agent「按 docs/specs/_RULE.md 填充 docs/specs 占位符」

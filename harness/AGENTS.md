@@ -54,3 +54,5 @@ Claude Code 用户同时阅读 `CLAUDE.md`。
 
 `docs/specs/` 下，不要全量加载，按需 `head`/`grep`（先看 `INDEX.md`）：
 `00_PROJECT_FACTS` 事实 / `02_ARCHITECTURE` 架构 / `03_BUSINESS_DOMAIN` 业务 / `04_CODING_STANDARDS` 规范 / `05_COMPONENT_PATTERNS` 组件 / `06_UI_COMPONENT_GUIDE` UI / `07_API_CONTRACTS` 接口 / `11_DANGEROUS_AREAS` 危险区 / `12_TROUBLESHOOTING` 排障。
+
+PC 端色号、字号、组件主题 token 按需查 `docs/token-specs/README.md`、`docs/token-specs/Light.tokens.json`、`docs/token-specs/antd-vue-theme.ts`；后续 UI 还原不要绕过 token 手写临时值。

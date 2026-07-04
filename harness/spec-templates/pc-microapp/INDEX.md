@@ -17,6 +17,9 @@
 | 09/10 | 技术方案模板/流程 |
 | 11_DANGEROUS_AREAS | ⚠️ 改基座/共享包/路由/请求/构建前必读 |
 | 12_TROUBLESHOOTING | 排障 |
+| ../token-specs/README | PC 端设计 token 使用规则 |
+| ../token-specs/Light.tokens.json | Figma Light 模式原始 token |
+| ../token-specs/antd-vue-theme.ts | Ant Design Vue / dcgj-ui 主题 token |
 | dcgj-components/COMPONENT_INDEX | dcgj-ui 组件 |
 | examples/ skills-reference/ | 参考 |
 | dangerous-zones.txt | 机器可读危险区（驱动 hooks）|
