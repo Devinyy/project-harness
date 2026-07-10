@@ -36,3 +36,19 @@ Expected: no output and exit status 0.
 Run: `git add spec-templates/pc-microapp/04_CODING_STANDARDS.md spec-templates/pc-microapp/06_UI_COMPONENT_GUIDE.md docs/superpowers/plans/2026-07-10-pc-viewport-guidance.md && git commit -m "docs: add pc viewport guidance"`
 
 Expected: commit contains exactly the two PC template files and this implementation plan.
+
+### Task 2: Require Windows and macOS compatibility
+
+**Files:**
+- Modify: `spec-templates/pc-microapp/04_CODING_STANDARDS.md`
+- Test: `git diff --check`
+
+- [x] **Step 1: Add the cross-platform requirement**
+
+Add a bullet to `PC 尺寸与自适应` requiring each PC feature to account for Windows and macOS, including mainstream browser rendering, scrollbar differences, font rendering, shortcut hints, and system interactions.
+
+- [x] **Step 2: Validate Markdown whitespace**
+
+Run: `git diff --check`
+
+Expected: no output and exit status 0.
