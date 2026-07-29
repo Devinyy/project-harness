@@ -8,30 +8,21 @@ if [ "$(echo "$INPUT" | jq -r '.stop_hook_active // false')" = "true" ]; then
   exit 0
 fi
 
-# 解析本项目的类型检查命令（issue: 不要写死 vue-tsc）
-# 优先级：docs/specs/verify.cmd（init-specs 生成）→ package.json 脚本探测 → 兜底 vue-tsc
-resolve_typecheck() {
-  if [ -f docs/specs/verify.cmd ]; then
-    grep -vE '^\s*(#|$)' docs/specs/verify.cmd | head -1
-    return
-  fi
-  if [ -f package.json ]; then
-    local s
-    for s in lint:type validate type-check typecheck check; do
-      if jq -e --arg s "$s" '.scripts[$s] // empty' package.json >/dev/null 2>&1; then
-        echo "pnpm run $s"; return
-      fi
-    done
-  fi
-  echo "pnpm exec vue-tsc --noEmit"
-}
+HOOK_DIR=$(cd "$(dirname "$0")" && pwd -P)
+HARNESS_ROOT=$(cd "$HOOK_DIR/../.." && pwd -P)
 
-# === 1. 类型检查 ===
-TYPECHECK=$(resolve_typecheck)
-TSC_OUTPUT=$(bash -c "$TYPECHECK" 2>&1)
-if [ $? -ne 0 ]; then
-  ERRORS=$(echo "$TSC_OUTPUT" | head -15 | tr '"\\' '_')
-  printf '{"continue": true, "hookSpecificOutput": {"hookEventName": "Stop", "additionalContext": "类型检查未通过（%s）：\n%s"}}\n' "$(printf '%s' "$TYPECHECK" | tr '"\\' '_')" "$ERRORS"
+# === 1. 共享验证 ===
+VERIFY_OUTPUT=$(bash "$HARNESS_ROOT/scripts/verify-harness.sh" 2>&1)
+VERIFY_EXIT=$?
+if [ "$VERIFY_EXIT" -ne 0 ]; then
+  ERRORS=$(echo "$VERIFY_OUTPUT" | head -15 | tr '"\\' '_')
+  printf '{"continue": true, "hookSpecificOutput": {"hookEventName": "Stop", "additionalContext": "Harness 验证未通过：\n%s"}}\n' "$ERRORS"
+  exit 0
+fi
+
+if [ -d "$HARNESS_ROOT/spec-templates" ] && [ ! -f "$HARNESS_ROOT/package.json" ]; then
+  DIFF_STAT=$(git diff --stat HEAD 2>/dev/null | tr '"\\' '_' || echo "(未在 git 仓库中)")
+  printf '{"continue": false, "hookSpecificOutput": {"hookEventName": "Stop", "additionalContext": "── Harness 自检通过 ──\n%s"}}\n' "$DIFF_STAT"
   exit 0
 fi
 

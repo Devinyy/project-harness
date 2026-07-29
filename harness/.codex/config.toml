@@ -5,7 +5,7 @@
 approval_policy = "on-request"
 
 # --- 上下文管理 ---
-project_doc_max_bytes = 4000
+project_doc_max_bytes = 8192
 project_doc_fallback_filenames = ["CLAUDE.md"]
 
 # --- Hooks ---
