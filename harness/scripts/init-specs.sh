@@ -101,22 +101,145 @@ if [ -d "$DIR/AGENTS" ]; then
   done < <(find "$DIR/AGENTS" -name 'AGENTS.md' -print0)
 fi
 
-# 4. 探测并写入类型检查命令（verify-before-stop hook 读取，避免写死 vue-tsc）
-if [ ! -f "$SPECS/verify.cmd" ]; then
-  VCMD="pnpm exec vue-tsc --noEmit"
-  if [ -f package.json ]; then
-    for s in lint:type validate type-check typecheck check; do
-      if jq -e --arg s "$s" '.scripts[$s] // empty' package.json >/dev/null 2>&1; then
-        VCMD="pnpm run $s"; break
-      fi
+# 4. 探测并写入 fast/full 验证档位
+package_script_exists() {
+  local script_name="$1"
+  [ -f package.json ] &&
+    jq -e --arg script_name "$script_name" \
+      '.scripts[$script_name] // empty' package.json >/dev/null 2>&1
+}
+
+first_package_script() {
+  local script_name
+  for script_name in "$@"; do
+    if package_script_exists "$script_name"; then
+      printf '%s\n' "$script_name"
+      return 0
+    fi
+  done
+  return 1
+}
+
+matching_package_scripts() {
+  local script_pattern="$1"
+  [ -f package.json ] || return 0
+  jq -r --arg script_pattern "$script_pattern" \
+    '.scripts // {} | keys[] | select(test($script_pattern))' package.json |
+    LC_ALL=C sort
+}
+
+package_has_dependency() {
+  local dependency_name="$1"
+  [ -f package.json ] &&
+    jq -e --arg dependency_name "$dependency_name" \
+      '.devDependencies[$dependency_name] // .dependencies[$dependency_name] // empty' \
+      package.json >/dev/null 2>&1
+}
+
+FULL_SCRIPTS=()
+FULL_SCRIPT_COUNT=0
+LINT_FOUND=0
+BUILD_FOUND=0
+TEST_FOUND=0
+SMOKE_FOUND=0
+add_full_script() {
+  local category="$1"
+  local script_name="$2"
+  local existing
+  [ -n "$script_name" ] || return 0
+  [ "$script_name" = "${TYPE_SCRIPT:-}" ] && return 0
+  if [ "$FULL_SCRIPT_COUNT" -gt 0 ]; then
+    for existing in "${FULL_SCRIPTS[@]}"; do
+      [ "$existing" = "$script_name" ] && return 0
     done
   fi
+  FULL_SCRIPTS[$FULL_SCRIPT_COUNT]="$script_name"
+  FULL_SCRIPT_COUNT=$((FULL_SCRIPT_COUNT + 1))
+  case "$category" in
+    lint) LINT_FOUND=1 ;;
+    build) BUILD_FOUND=1 ;;
+    test) TEST_FOUND=1 ;;
+    smoke) SMOKE_FOUND=1 ;;
+  esac
+}
+
+# verify.cmd 是 Stop hook 使用的 fast profile，保持旧文件语义兼容。
+if [ ! -f "$SPECS/verify.cmd" ]; then
+  VCMD=""
+  TYPE_SCRIPT=$(first_package_script lint:type validate type-check typecheck check || true)
+  if [ -n "$TYPE_SCRIPT" ]; then
+    VCMD="pnpm run $TYPE_SCRIPT"
+  elif package_has_dependency vue-tsc; then
+    VCMD="pnpm exec vue-tsc --noEmit"
+  fi
   {
-    echo "# 本项目类型检查命令（verify-before-stop hook 读取首行非注释）"
+    echo "# fast profile：Stop hook 默认执行；一行一个命令"
     echo "# 自动探测自 package.json，按真实情况修正（如 monorepo filter）"
-    echo "$VCMD"
+    if [ -n "$VCMD" ]; then
+      echo "$VCMD"
+    else
+      echo "# typecheck: 未探测到 package script 或 vue-tsc 依赖，请人工确认"
+    fi
   } > "$SPECS/verify.cmd"
-  echo "✅ 写入 $SPECS/verify.cmd → $VCMD（请人工确认）"
+  echo "✅ 写入 $SPECS/verify.cmd → ${VCMD:-未探测到 fast 命令}（请人工确认）"
+else
+  TYPE_SCRIPT=$(
+    sed -nE 's/^[[:space:]]*pnpm run ([^[:space:]]+)[[:space:]]*$/\1/p' \
+      "$SPECS/verify.cmd" |
+      head -1
+  )
+fi
+
+# verify.full.cmd 是可选的人工/CI 深度检查，只写入真实存在的 package scripts。
+if [ ! -f "$SPECS/verify.full.cmd" ]; then
+  LINT_SCRIPT=$(first_package_script lint || true)
+  if [ -n "$LINT_SCRIPT" ]; then
+    add_full_script lint "$LINT_SCRIPT"
+  else
+    while IFS= read -r script_name; do
+      add_full_script lint "$script_name"
+    done < <(matching_package_scripts '^lint(:|$)')
+  fi
+
+  BUILD_SCRIPT=$(first_package_script build || true)
+  if [ -n "$BUILD_SCRIPT" ]; then
+    add_full_script build "$BUILD_SCRIPT"
+  else
+    BUILD_SCRIPT=$(matching_package_scripts '^build:' | head -1)
+    add_full_script build "$BUILD_SCRIPT"
+  fi
+
+  TEST_SCRIPT=$(first_package_script test || true)
+  if [ -n "$TEST_SCRIPT" ]; then
+    add_full_script test "$TEST_SCRIPT"
+  else
+    while IFS= read -r script_name; do
+      add_full_script test "$script_name"
+    done < <(matching_package_scripts '^test:')
+  fi
+
+  if [ "$FLAVOR" = "mini" ]; then
+    while IFS= read -r script_name; do
+      add_full_script smoke "$script_name"
+    done < <(matching_package_scripts '(^|:)smoke(:|$)|^smoke')
+  fi
+
+  {
+    echo "# full profile：先执行 verify.cmd，再按顺序执行本文件；一行一个命令"
+    echo "# 只记录 package.json 中真实存在的脚本；缺失类别保持注释，不推断命令"
+    if [ "$FULL_SCRIPT_COUNT" -gt 0 ]; then
+      for script_name in "${FULL_SCRIPTS[@]}"; do
+        echo "pnpm run $script_name"
+      done
+    fi
+    [ "$LINT_FOUND" -eq 1 ] || echo "# lint: 未探测到可用脚本"
+    [ "$BUILD_FOUND" -eq 1 ] || echo "# build: 未探测到可用脚本"
+    [ "$TEST_FOUND" -eq 1 ] || echo "# test: 未探测到可用脚本（不生成 pnpm test）"
+    if [ "$FLAVOR" = "mini" ] && [ "$SMOKE_FOUND" -ne 1 ]; then
+      echo "# smoke: 未探测到平台 smoke 脚本"
+    fi
+  } > "$SPECS/verify.full.cmd"
+  echo "✅ 写入 $SPECS/verify.full.cmd（$FULL_SCRIPT_COUNT 条深度检查，请人工确认）"
 fi
 
 # 5. 放一份填充指引供任意 agent 参考
@@ -127,8 +250,9 @@ cat <<'EOF'
 ── 脚手架完成。下一步「填充」需要 agent / 人来做（脚本不替代）──
   1. 按 docs/specs/_RULE.md 与 spec-templates/SCHEMA.md，探索真实代码取证
   2. 逐份替换 docs/specs/ 里的 <填写：…> 占位符；务必校准 docs/specs/dangerous-zones.txt
-  3. PC 项目如存在 docs/token-specs/，后续色号、字号以该目录 token 为准
-  4. 复核后删除 docs/specs/_RULE.md，把各文档 frontmatter 的 status 改 active
+  3. 人工核对 verify.cmd（fast）与 verify.full.cmd（可选 full），不要保留不存在的命令
+  4. PC 项目如存在 docs/token-specs/，后续色号、字号以该目录 token 为准
+  5. 复核后删除 docs/specs/_RULE.md，把各文档 frontmatter 的 status 改 active
 
   • Claude Code：直接运行 /init-specs，agent 会自动完成探索+填充
   • Codex / Cursor / Windsurf：先跑本脚本，再让 agent「按 docs/specs/_RULE.md 填充 docs/specs 占位符」

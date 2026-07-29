@@ -18,6 +18,7 @@ mkdir -p \
 cp "$HARNESS_ROOT/.codex/config.toml" "$FIXTURE_ROOT/.codex/config.toml"
 cp "$HARNESS_ROOT/.codex/hooks/"*.sh "$FIXTURE_ROOT/.codex/hooks/"
 cp "$HARNESS_ROOT/scripts/verify-harness.sh" "$FIXTURE_ROOT/scripts/verify-harness.sh"
+cp "$HARNESS_ROOT/scripts/run-verification-profile.sh" "$FIXTURE_ROOT/scripts/run-verification-profile.sh"
 cp "$HARNESS_ROOT/scripts/lib/specs-state.sh" "$FIXTURE_ROOT/scripts/lib/specs-state.sh"
 [ -f "$HARNESS_ROOT/scripts/lib/changed-files.sh" ] &&
   cp "$HARNESS_ROOT/scripts/lib/changed-files.sh" "$FIXTURE_ROOT/scripts/lib/changed-files.sh"

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Codex Stop hook: 类型检查 + 格式化兜底 + 危险区兜底扫描 + 改动摘要
+# Codex Stop hook: fast profile + 格式化兜底 + 危险区兜底扫描 + 改动摘要
 
 INPUT=$(cat)
 
@@ -36,7 +36,7 @@ VERIFY_OUTPUT=$(
 VERIFY_EXIT=$?
 if [ "$VERIFY_EXIT" -ne 0 ]; then
   ERRORS=$(echo "$VERIFY_OUTPUT" | head -15 | tr '"\\' '_')
-  emit_stop_response true "$(printf 'Harness 验证未通过：\n%s' "$ERRORS")"
+  emit_stop_response true "$(printf 'Harness fast profile 未通过：\n%s' "$ERRORS")"
   exit 0
 fi
 

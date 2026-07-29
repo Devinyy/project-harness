@@ -21,7 +21,7 @@
    - 入口与基础设施：`main.ts`、`App.vue`、请求封装、认证、路由
    - 目录结构、端口、env/baseURL、UI 库注册
 5. 逐份替换 `docs/specs/` 里的 `<填写：…>` 占位符；删除不适用章节，补真实情况。
-6. **务必校准 `docs/specs/dangerous-zones.txt`**（hooks 危险区来源）；并核对 `docs/specs/verify.cmd`（脚手架已自动探测的类型检查命令，确认是否正确，如 monorepo 需 filter）。
+6. **务必校准 `docs/specs/dangerous-zones.txt`**（hooks 危险区来源）；并核对 `docs/specs/verify.cmd`（fast）与 `docs/specs/verify.full.cmd`（可选 full），删除不存在的命令，如 monorepo 需补 filter。
 7. **真实性纪律**：只写代码确认的事实，拿不准写 `// TODO: 待确认` 留空，**禁止编造**。`status` 暂留 `draft`，`last_verified` 填今天。
 
 ## 收尾

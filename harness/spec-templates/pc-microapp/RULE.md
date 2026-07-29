@@ -19,4 +19,7 @@
 
 ## dangerous-zones.txt：见同目录模版，按实际增删。
 ## 目录级 AGENTS：apps/AGENTS.md、apps/micro-main/AGENTS.md(基座危险区)、packages/AGENTS.md(共享包危险区)。
-## 类型检查：pnpm exec vue-tsc --noEmit（Vue 项目用 vue-tsc 不是 tsc）。
+## 验证档位
+- fast：从 package.json 取证 typecheck/validate 命令写入 `verify.cmd`；Vue 项目用 vue-tsc，不是 tsc。
+- full：在 `verify.full.cmd` 中记录真实存在的 lint、build 和 test/test:* 脚本；没有对应脚本就写注释说明，不编造。
+- Stop hook 只运行 fast；人工/CI 用 `bash scripts/run-verification-profile.sh full`。

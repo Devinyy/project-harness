@@ -1,5 +1,5 @@
 #!/bin/bash
-# Stop hook: 结束前类型检查 + 改动摘要。Exit 0 允许 / 2 强制继续
+# Stop hook: 结束前 fast profile + 改动摘要。Exit 0 允许 / 2 强制继续
 INPUT=$(cat)
 if [ "$(echo "$INPUT" | jq -r '.stop_hook_active')" = "true" ]; then exit 0; fi
 
@@ -8,7 +8,7 @@ HARNESS_ROOT=$(cd "$HOOK_DIR/../.." && pwd -P)
 VERIFY_OUTPUT=$(bash "$HARNESS_ROOT/scripts/verify-harness.sh" 2>&1)
 VERIFY_EXIT=$?
 if [ "$VERIFY_EXIT" -ne 0 ]; then
-  echo "❌ Harness 验证未通过：" >&2
+  echo "❌ Harness fast profile 未通过：" >&2
   echo "$VERIFY_OUTPUT" | head -20 >&2
   exit 2
 fi

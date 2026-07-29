@@ -19,4 +19,7 @@
 
 ## dangerous-zones.txt：见同目录模版，按实际增删。
 ## 目录级 AGENTS：src/api、src/components、src/composables、src/utils。
-## 类型检查：pnpm exec vue-tsc --noEmit（等价 npm run lint:type）。Stop hook 不要调 pnpm test（无单测）。
+## 验证档位
+- fast：从 package.json 取证 typecheck/lint:type 命令写入 `verify.cmd`；Vue 项目用 vue-tsc，不是 tsc。
+- full：记录真实存在的 lint、一个可用 build，以及平台 smoke 命令；只在项目确有 test 脚本时记录测试。
+- Stop hook 只运行 fast；人工/CI 用 `bash scripts/run-verification-profile.sh full`。不得因为模板示例而调用或生成 `pnpm test`。

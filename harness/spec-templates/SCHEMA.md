@@ -19,7 +19,8 @@
 | `11_DANGEROUS_AREAS.md` | 风险分级 + 危险区清单（路径+为什么危险+改动前必做+红线）|
 | `12_TROUBLESHOOTING.md` | 已知问题与解法、调试入口 |
 | `dangerous-zones.txt` | **机器可读**危险区路径清单，一行一个子串，`#` 注释；hooks 读取 |
-| `verify.cmd` | **机器可读**类型检查命令（首行非注释）；verify-before-stop hook 读取；`init-specs.sh` 自动探测写入，人工核对（如 monorepo filter）|
+| `verify.cmd` | **机器可读 fast profile**；一行一个命令、支持 `#` 注释；Stop hook 按顺序执行，`init-specs.sh` 优先写入真实 typecheck/validate 脚本，人工核对（如 monorepo filter）|
+| `verify.full.cmd` | 可选的 **full profile** 增量命令；fast 通过后按顺序执行；只记录真实存在的 lint/build/test/smoke 脚本，不可编造 |
 | 目录级 `AGENTS.md` | 在 flavor 列出的关键目录下生成局部约束 |
 
 ## 文档头部（每份 md）
@@ -35,6 +36,12 @@ purpose: <一句话>
 
 ## dangerous-zones.txt 格式
 一行一个**子串**（hook 用 grep 匹配文件路径），不要写正则；覆盖 11 中所有 P0/P1 路径。
+
+## verification profile 格式
+- `verify.cmd` 是 fast profile，Stop hook 默认运行。
+- `verify.full.cmd` 只放 fast 之外的深度检查；`bash scripts/run-verification-profile.sh full` 会先 fast、再 full。
+- 两个文件均一行一个 shell 命令，忽略空行和以 `#` 开头的行，遇首个失败停止。
+- 不同项目不要求具备相同脚本；不存在的检查写注释说明缺失，不得推断 `pnpm test` 等命令。
 
 ## 纪律
 篇幅克制；路径/端口/字段/命令一律取证；flavor 给的是典型形态，真实值以当前仓库为准。

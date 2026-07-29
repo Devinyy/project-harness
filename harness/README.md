@@ -10,7 +10,7 @@
   - `missing`：facts 不存在 → 见下方「初始化」。
   - `draft`：骨架存在但有占位符、未复核状态 → 继续填充，不得作为项目事实。
   - `active`：facts 存在、无占位符、状态均为 `active` → agent 才能先读 facts + `INDEX.md` 作为真实事实。
-- 危险区等机制由 specs **驱动**（hook 读 `docs/specs/dangerous-zones.txt`、类型检查读 `docs/specs/verify.cmd`），harness 本体保持通用、可移植。
+- 危险区等机制由 specs **驱动**（hook 读 `docs/specs/dangerous-zones.txt`，验证读取 fast `verify.cmd` 与可选 full `verify.full.cmd`），harness 本体保持通用、可移植。
 - **架构/组件约定是固定基线**：`spec-templates` 的 `02_ARCHITECTURE`（MVVM 通用分层模型）与 `05_COMPONENT_PATTERNS`（拆分原则）带不随项目改写的固定段，项目只在其上补特例——跨项目架构一致，且组件拆分有可判定规则（配 `check-large-file.sh` 门禁）。
 
 ## 目录布局（harness 内容直接放项目根）
@@ -23,11 +23,12 @@
 ├── .claude/                   # Claude Code 专属
 │   ├── settings.json
 │   ├── commands/              #   /init-specs /new-page /debug /refactor /review /tech-solution
-│   └── hooks/                 #   guard（读 dangerous-zones.txt）/ block / format(.vue) / check-box-sizing(uni-app) / check-large-file(.vue>500行) / verify(vue-tsc)
+│   └── hooks/                 #   guard / block / format / box-sizing / large-file / verify(fast profile)
 ├── .codex/{config.toml, hooks/}   # Codex 专属
 ├── scripts/
 │   ├── doctor.sh              # 自检/项目双模式：检测环境 + docs/specs 是否就绪
-│   └── init-specs.sh          # 👈 跨 agent 脚手架：复制骨架→docs/specs/ + 放置 AGENTS
+│   ├── init-specs.sh          # 👈 跨 agent 脚手架：复制骨架→docs/specs/ + 放置 AGENTS
+│   └── run-verification-profile.sh # fast/full 执行与 baseline snapshot/compare
 ├── spec-templates/            # 👈 可见、agent 中立的模版骨架（生成 docs/specs 的全部依赖，随 harness 走）
 │   ├── SCHEMA.md              #   通用规则：要哪些文件、各写什么、dangerous-zones.txt 格式
 │   ├── pc-microapp/           #   PC 微前端 flavor —— 全套骨架（提炼自 dc-platform）
@@ -69,7 +70,7 @@ bash scripts/doctor.sh
 
 | 步骤 | Claude Code | Codex / Cursor / Windsurf / 人 |
 |------|-------------|-------------------------------|
-| ① 脚手架：探测 flavor、复制骨架到 `docs/specs/`、镜像放置目录级 AGENTS、生成 `dangerous-zones.txt`/`verify.cmd` | 由 `/init-specs` 内部调用 | **手动**：`bash scripts/init-specs.sh` |
+| ① 脚手架：探测 flavor、复制骨架到 `docs/specs/`、镜像放置目录级 AGENTS、生成 `dangerous-zones.txt`/`verify.cmd`/`verify.full.cmd` | 由 `/init-specs` 内部调用 | **手动**：`bash scripts/init-specs.sh` |
 | ② 填充：探索真实代码、替换 `<填写：…>` 占位符、校准 `dangerous-zones.txt` | `/init-specs` 接着**自动完成** | **手动**：让 agent「按 `docs/specs/_RULE.md` 填充 docs/specs 占位符」 |
 
 > ⚠️ **`scripts/init-specs.sh` 只做第①步（复制骨架），不填充内容**——产物全是 `<填写：…>` 占位符。只有 Claude Code 的 `/init-specs` 会接着自动做第②步探索+填充。其它 agent 需自己驱动填充。
@@ -82,7 +83,8 @@ bash scripts/doctor.sh
 | 机制 | 来源 | 说明 |
 |------|------|------|
 | 危险区拦截 | `docs/specs/dangerous-zones.txt` | guard hook 逐行子串匹配；缺失时用内置通用兜底 |
-| 类型检查命令 | `docs/specs/verify.cmd` | verify hook 读它；缺失时探测 package.json 脚本（lint:type/validate/…），再兜底 `pnpm exec vue-tsc --noEmit` |
+| fast profile | `docs/specs/verify.cmd` | Stop hook 按顺序执行；通常是 typecheck/validate，一行一个命令 |
+| full profile | `docs/specs/verify.full.cmd` | 可选；人工/CI 执行 fast 后再执行真实存在的 lint/build/test/smoke |
 | PC 设计 token | `docs/token-specs/` | PC 页面色号、字号、主题覆盖以 Light.tokens.json / antd-vue-theme.ts 为准 |
 | box-sizing 校验 | uni-app 项目门禁 | 仅当 `src/pages.json` 存在时启用 |
 | 按需查阅 | `docs/specs/00_PROJECT_FACTS.md` + `INDEX.md` | agent 先读事实，再按需 grep 其余 |
@@ -97,7 +99,26 @@ bash scripts/doctor.sh
 | format-on-write.sh | PostToolUse | prettier（含 `.vue`）|
 | check-box-sizing.sh | PostToolUse | padding 块需 `box-sizing`（仅 uni-app 项目）|
 | check-large-file.sh | PostToolUse | 单 `.vue` > 500 行时提示按 `05_COMPONENT_PATTERNS.md`「拆分原则」拆分（advisory，不回滚）|
-| verify-before-stop.sh | Stop | 类型检查（命令来自 `docs/specs/verify.cmd`，缺失则探测脚本/兜底 vue-tsc）+ 改动摘要（Codex 版含格式化兜底 + 读 dangerous-zones.txt 危险区扫描）|
+| verify-before-stop.sh | Stop | fast profile（来自 `docs/specs/verify.cmd`）+ 改动摘要（Codex 版含格式化兜底 + 读 dangerous-zones.txt 危险区扫描）|
+
+### 验证档位与 baseline
+
+```bash
+# Stop hook 使用的快速检查
+bash scripts/run-verification-profile.sh fast
+
+# 人工或 CI 深度检查：先 fast，再执行可选 verify.full.cmd
+bash scripts/run-verification-profile.sh full
+
+# 保存命令/退出码基线（JSONL）；git-path 同时兼容普通仓库与 linked worktree
+BASELINE_FILE=$(git rev-parse --git-path harness-verification.jsonl)
+bash scripts/run-verification-profile.sh full --snapshot "$BASELINE_FILE"
+
+# 历史失败只警告，新增失败才返回非零
+bash scripts/run-verification-profile.sh full --compare "$BASELINE_FILE"
+```
+
+初始化器只使用 `package.json` 中真实存在的脚本或依赖。PC full 关注 lint/build/已有测试；uni-app full 关注 lint/build/已有平台 smoke，不会凭模板生成 `pnpm test`。
 
 ## Claude Code 与 Codex 差异
 
@@ -107,7 +128,7 @@ bash scripts/doctor.sh
 | 配置 | .claude/settings.json | .codex/config.toml |
 | Hooks 协议 | exit code | JSON stdout |
 | Slash commands | ✅（含 /init-specs） | 不支持（手动按 spec-templates 规则生成）|
-| 写入拦截 | ✅ | ⚠️ apply_patch 不触发，Stop hook 兜底 |
+| 写入拦截 | ✅ | ✅ 覆盖 apply_patch/Edit/Write，Stop hook 再做完整变更兜底 |
 
 ## 迭代原则
 
