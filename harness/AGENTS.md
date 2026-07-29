@@ -16,6 +16,8 @@ Claude Code 用户同时阅读 `CLAUDE.md`。
 - **PC 微前端类**：Vue3 + micro-app + dcgj-ui + `@platform/http-client`（基座 `apps/micro-main` + 子应用）。
 - **uni-app 多端类**：uni-app + Vue3 + uview-plus（单 `src/`，`pages.json` 路由，`#ifdef` 条件编译）。
 
+Specs 为 `active` 后，执行可能涉及授权边界的动作前先读 `docs/specs/13_AGENT_POLICY.md`：`Allowed` 可在用户范围内执行，`Blocked` 不执行，`Ask First` 必须取得明确授权。
+
 ## 核心原则
 
 1. 先读后写 — 先查现有实现，再决定改哪些文件
@@ -54,6 +56,6 @@ Claude Code 用户同时阅读 `CLAUDE.md`。
 ## 按需参考
 
 `docs/specs/` 下，不要全量加载，按需 `head`/`grep`（先看 `INDEX.md`）：
-`00_PROJECT_FACTS` 事实 / `02_ARCHITECTURE` 架构 / `03_BUSINESS_DOMAIN` 业务 / `04_CODING_STANDARDS` 规范 / `05_COMPONENT_PATTERNS` 组件 / `06_UI_COMPONENT_GUIDE` UI / `07_API_CONTRACTS` 接口 / `11_DANGEROUS_AREAS` 危险区 / `12_TROUBLESHOOTING` 排障。
+`00_PROJECT_FACTS` 事实 / `02_ARCHITECTURE` 架构 / `03_BUSINESS_DOMAIN` 业务 / `04_CODING_STANDARDS` 规范 / `05_COMPONENT_PATTERNS` 组件 / `06_UI_COMPONENT_GUIDE` UI / `07_API_CONTRACTS` 接口 / `11_DANGEROUS_AREAS` 危险区 / `12_TROUBLESHOOTING` 排障 / `13_AGENT_POLICY` 权限边界。
 
 PC 端色号、字号、组件主题 token 按需查 `docs/token-specs/README.md`、`docs/token-specs/Light.tokens.json`、`docs/token-specs/antd-vue-theme.ts`；后续 UI 还原不要绕过 token 手写临时值。

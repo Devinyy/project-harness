@@ -17,6 +17,7 @@
 | 09/10 | 技术方案模板/流程 |
 | 11_DANGEROUS_AREAS | ⚠️ 改基座/共享包/路由/请求/构建前必读 |
 | 12_TROUBLESHOOTING | 排障 |
+| 13_AGENT_POLICY | Allowed / Blocked / Ask First 权限边界 |
 | ../token-specs/README | PC 端设计 token 使用规则 |
 | ../token-specs/Light.tokens.json | Figma Light 模式原始 token |
 | ../token-specs/antd-vue-theme.ts | Ant Design Vue / dcgj-ui 主题 token |

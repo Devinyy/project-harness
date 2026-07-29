@@ -8,6 +8,17 @@
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd -P)
 . "$SCRIPT_DIR/lib/specs-state.sh"
 
+record_readiness() {
+  local category="$1"
+  local decision="$2"
+  local exit_status="$3"
+  [ -f "$SCRIPT_DIR/record-harness-event.sh" ] || return 0
+  bash "$SCRIPT_DIR/record-harness-event.sh" \
+    --adapter harness --event session_start --category "$category" \
+    --decision "$decision" --exit "$exit_status" \
+    >/dev/null 2>&1 || true
+}
+
 MODE=""; STRICT=0
 for arg in "$@"; do
   case "$arg" in
@@ -70,7 +81,11 @@ if [ "$MODE" = "self" ]; then
   fi
   [ -d "docs/specs" ] && warn "harness 包内存在 docs/specs/ 目录（建议删除，避免与项目语义混淆；以 00_PROJECT_FACTS.md 判定是否已初始化）"
 
-  if [ $ERRORS -gt 0 ]; then echo "== ❌ 自检未通过（$ERRORS 项缺失）=="; exit 1; fi
+  if [ $ERRORS -gt 0 ]; then
+    record_readiness readiness_failed fail 1
+    echo "== ❌ 自检未通过（$ERRORS 项缺失）=="
+    exit 1
+  fi
   echo "== ✅ harness 自身健康 =="; exit 0
 fi
 
@@ -131,5 +146,17 @@ for hook in .claude/hooks/*.sh .codex/hooks/*.sh scripts/*.sh; do
   [ -f "$hook" ] && [ ! -x "$hook" ] && warn "$hook 缺执行权限：chmod +x $hook"
 done
 
-if [ $ERRORS -gt 0 ]; then echo "== ❌ 检查未通过（$ERRORS 项关键缺失）=="; exit 1; fi
+READINESS_CATEGORY=""
+case "$SPECS_STATE" in
+  missing|draft) READINESS_CATEGORY="specs_$SPECS_STATE" ;;
+esac
+
+if [ $ERRORS -gt 0 ]; then
+  record_readiness "${READINESS_CATEGORY:-readiness_failed}" fail 1
+  echo "== ❌ 检查未通过（$ERRORS 项关键缺失）=="
+  exit 1
+fi
+if [ -n "$READINESS_CATEGORY" ]; then
+  record_readiness "$READINESS_CATEGORY" warn 0
+fi
 echo "== ✅ 环境检查通过 =="; exit 0

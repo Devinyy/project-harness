@@ -17,6 +17,7 @@
 | 09/10 | 技术方案模板/流程 |
 | 11_DANGEROUS_AREAS | ⚠️ 改请求/认证/入口/路由/pages.json/manifest 前必读 |
 | 12_TROUBLESHOOTING | 排障 |
+| 13_AGENT_POLICY | Allowed / Blocked / Ask First 权限边界 |
 | uview-components/COMPONENT_INDEX | 常用 uview-plus 组件与封装 |
 | examples/ skills-reference/ | 参考 |
 | dangerous-zones.txt | 机器可读危险区（驱动 hooks）|

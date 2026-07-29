@@ -4,6 +4,14 @@
 INPUT=$(cat)
 REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd -P)
 ZONES_FILE="$REPO_ROOT/docs/specs/dangerous-zones.txt"
+AUDIT_SCRIPT="$REPO_ROOT/scripts/record-harness-event.sh"
+
+record_dangerous_zone() {
+  [ -f "$AUDIT_SCRIPT" ] || return 0
+  bash "$AUDIT_SCRIPT" \
+    --adapter codex --event pre_tool_use --category dangerous_zone --decision block --exit 0 \
+    >/dev/null 2>&1 || true
+}
 
 FILE_PATHS=$(
   {
@@ -54,6 +62,7 @@ is_dangerous_path() {
 
 while IFS= read -r file_path; do
   if is_dangerous_path "$file_path"; then
+    record_dangerous_zone
     SAFE_PATH=$(printf '%s' "$file_path" | tr '"\\' '_')
     SAFE_PATTERN=$(printf '%s' "$MATCHED_PATTERN" | tr '"\\' '_')
     printf '{"decision": "block", "reason": "危险区文件被拦截: %s（规则: %s）"}\n' \

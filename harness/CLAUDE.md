@@ -16,6 +16,8 @@
 > - **PC 微前端类**（如 dc-platform）：Vue3 + `@micro-zoe/micro-app` monorepo + dcgj-ui + `@platform/http-client`，基座 `apps/micro-main` + 子应用。
 > - **uni-app 多端类**（如 ecm-welfare）：uni-app + Vue3 + uview-plus，单 `src/`，`pages.json` 路由，多端 `#ifdef` 条件编译。
 
+Specs 为 `active` 后，执行可能涉及授权边界的动作前先读 `docs/specs/13_AGENT_POLICY.md`：`Allowed` 可在用户范围内执行，`Blocked` 不执行，`Ask First` 必须取得明确授权。
+
 ## 硬规则（通用）
 
 - 先读代码再改代码，先找现有实现再写新的

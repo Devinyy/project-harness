@@ -26,6 +26,7 @@ fi
 HOOK_DIR=$(cd "$(dirname "$0")" && pwd -P)
 HARNESS_ROOT=$(cd "$HOOK_DIR/../.." && pwd -P)
 REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd -P)
+AUDIT_SCRIPT="$HARNESS_ROOT/scripts/record-harness-event.sh"
 . "$HARNESS_ROOT/scripts/lib/changed-files.sh"
 
 # === 1. 共享验证 ===
@@ -35,6 +36,11 @@ VERIFY_OUTPUT=$(
 )
 VERIFY_EXIT=$?
 if [ "$VERIFY_EXIT" -ne 0 ]; then
+  if [ -f "$AUDIT_SCRIPT" ]; then
+    bash "$AUDIT_SCRIPT" \
+      --adapter codex --event stop --category verification_failed --decision fail --exit "$VERIFY_EXIT" \
+      >/dev/null 2>&1 || true
+  fi
   ERRORS=$(echo "$VERIFY_OUTPUT" | head -15 | tr '"\\' '_')
   emit_stop_response true "$(printf 'Harness fast profile 未通过：\n%s' "$ERRORS")"
   exit 0
@@ -69,6 +75,11 @@ else
 fi
 
 if [ -n "$DANGER_FILES" ]; then
+  if [ -f "$AUDIT_SCRIPT" ]; then
+    bash "$AUDIT_SCRIPT" \
+      --adapter codex --event stop --category dangerous_zone --decision block --exit 0 \
+      >/dev/null 2>&1 || true
+  fi
   SAFE_FILES=$(printf '%s' "$DANGER_FILES" | tr '"\\' '_')
   emit_stop_response true "$(
     printf '⚠️ 检测到危险区文件被修改：\n%s\n请确认修改是否必要，或用 git checkout 回滚。' \

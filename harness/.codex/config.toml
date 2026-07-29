@@ -13,7 +13,7 @@ project_doc_fallback_filenames = ["CLAUDE.md"]
 # [features]
 # codex_hooks = true
 #
-# ⚠️ 待你按所装 Codex 版本核验 hooks 协议字段名是否一致。
+# 审计只读取官方公共字段 hook_event_name / permission_mode / tool_name，不依赖自定义输入。
 # 命令工具覆盖 Bash/exec_command 等别名；写入工具覆盖 apply_patch/Edit/Write。
 # 所有仓库内 Hook 都从 Git 根目录解析，避免在子目录执行时失效。
 
@@ -47,6 +47,14 @@ matcher = "Bash|shell|exec_command|local_shell|apply_patch|Edit|Write"
 type = "command"
 command = 'bash "$(git rev-parse --show-toplevel)/.codex/hooks/format-on-write.sh"'
 timeout = 15
+
+[[hooks.PostToolUse]]
+matcher = "*"
+
+[[hooks.PostToolUse.hooks]]
+type = "command"
+command = 'bash "$(git rev-parse --show-toplevel)/scripts/record-permission-outcome.sh codex"'
+timeout = 10
 
 [[hooks.Stop]]
 

@@ -5,9 +5,15 @@ if [ "$(echo "$INPUT" | jq -r '.stop_hook_active')" = "true" ]; then exit 0; fi
 
 HOOK_DIR=$(cd "$(dirname "$0")" && pwd -P)
 HARNESS_ROOT=$(cd "$HOOK_DIR/../.." && pwd -P)
+AUDIT_SCRIPT="$HARNESS_ROOT/scripts/record-harness-event.sh"
 VERIFY_OUTPUT=$(bash "$HARNESS_ROOT/scripts/verify-harness.sh" 2>&1)
 VERIFY_EXIT=$?
 if [ "$VERIFY_EXIT" -ne 0 ]; then
+  if [ -f "$AUDIT_SCRIPT" ]; then
+    bash "$AUDIT_SCRIPT" \
+      --adapter claude --event stop --category verification_failed --decision fail --exit "$VERIFY_EXIT" \
+      >/dev/null 2>&1 || true
+  fi
   echo "❌ Harness fast profile 未通过：" >&2
   echo "$VERIFY_OUTPUT" | head -20 >&2
   exit 2

@@ -25,6 +25,9 @@
         { "type": "command", "command": "bash .claude/hooks/format-on-write.sh" },
         { "type": "command", "command": "bash .claude/hooks/check-box-sizing.sh" },
         { "type": "command", "command": "bash .claude/hooks/check-large-file.sh" }
+      ] },
+      { "matcher": "*", "hooks": [
+        { "type": "command", "command": "bash scripts/record-permission-outcome.sh claude" }
       ] }
     ],
     "Stop": [

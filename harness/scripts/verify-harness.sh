@@ -29,6 +29,11 @@ fi
 PROJECT_ROOT=$(pwd -P)
 STATE=$(specs_state "$PROJECT_ROOT")
 if [ "$STATE" != "active" ]; then
+  if [ -f "$SCRIPT_DIR/record-harness-event.sh" ]; then
+    bash "$SCRIPT_DIR/record-harness-event.sh" \
+      --adapter harness --event readiness --category "specs_$STATE" --decision fail --exit 2 \
+      >/dev/null 2>&1 || true
+  fi
   printf '❌ specs state=%s：项目验证只接受已复核的 active specs\n' "$STATE" >&2
   exit 2
 fi

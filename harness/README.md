@@ -28,17 +28,19 @@
 ├── scripts/
 │   ├── doctor.sh              # 自检/项目双模式：检测环境 + docs/specs 是否就绪
 │   ├── init-specs.sh          # 👈 跨 agent 脚手架：复制骨架→docs/specs/ + 放置 AGENTS
-│   └── run-verification-profile.sh # fast/full 执行与 baseline snapshot/compare
+│   ├── run-verification-profile.sh # fast/full 执行与 baseline snapshot/compare
+│   ├── record-harness-event.sh # 匿名结构化审计事件，写入 git 私有目录
+│   └── record-permission-outcome.sh # PostToolUse 可观察授权模式审计
 ├── spec-templates/            # 👈 可见、agent 中立的模版骨架（生成 docs/specs 的全部依赖，随 harness 走）
 │   ├── SCHEMA.md              #   通用规则：要哪些文件、各写什么、dangerous-zones.txt 格式
 │   ├── pc-microapp/           #   PC 微前端 flavor —— 全套骨架（提炼自 dc-platform）
 │   │   ├── RULE.md            #     探索+填充说明
-│   │   ├── 00_PROJECT_FACTS.md … 12_TROUBLESHOOTING.md  INDEX.md  dangerous-zones.txt
+│   │   ├── 00_PROJECT_FACTS.md … 13_AGENT_POLICY.md  INDEX.md  dangerous-zones.txt
 │   │   ├── dcgj-components/  examples/  skills-reference/
 │   │   └── AGENTS/           #     apps/ · apps/micro-main/ · packages/ 目录级 AGENTS 模版（镜像放置）
 │   └── miniprogram-uniapp/    #   uni-app 多端 flavor —— 全套骨架（提炼自 ecm-welfare）
 │       ├── RULE.md
-│       ├── 00_PROJECT_FACTS.md … 12  INDEX.md  dangerous-zones.txt
+│       ├── 00_PROJECT_FACTS.md … 13_AGENT_POLICY.md  INDEX.md  dangerous-zones.txt
 │       ├── uview-components/  examples/  skills-reference/
 │       └── AGENTS/           #     src/api · src/components · src/composables · src/utils
 ├── token-templates/           # PC 设计 token 模板（初始化时复制到 docs/token-specs/）
@@ -87,7 +89,8 @@ bash scripts/doctor.sh
 | full profile | `docs/specs/verify.full.cmd` | 可选；人工/CI 执行 fast 后再执行真实存在的 lint/build/test/smoke |
 | PC 设计 token | `docs/token-specs/` | PC 页面色号、字号、主题覆盖以 Light.tokens.json / antd-vue-theme.ts 为准 |
 | box-sizing 校验 | uni-app 项目门禁 | 仅当 `src/pages.json` 存在时启用 |
-| 按需查阅 | `docs/specs/00_PROJECT_FACTS.md` + `INDEX.md` | agent 先读事实，再按需 grep 其余 |
+| 显式权限 | `docs/specs/13_AGENT_POLICY.md` | 统一使用 Allowed / Blocked / Ask First，避免把风险操作默认为已授权 |
+| 按需查阅 | `docs/specs/00_PROJECT_FACTS.md` + `INDEX.md` | agent 先读事实与权限边界，再按需 grep 其余 |
 
 ## Hooks 一览
 
@@ -99,7 +102,18 @@ bash scripts/doctor.sh
 | format-on-write.sh | PostToolUse | prettier（含 `.vue`）|
 | check-box-sizing.sh | PostToolUse | padding 块需 `box-sizing`（仅 uni-app 项目）|
 | check-large-file.sh | PostToolUse | 单 `.vue` > 500 行时提示按 `05_COMPONENT_PATTERNS.md`「拆分原则」拆分（advisory，不回滚）|
+| record-permission-outcome.sh | PostToolUse | 按官方 `permission_mode` 记录已完成的 acceptEdits 编辑和 bypassPermissions 调用 |
 | verify-before-stop.sh | Stop | fast profile（来自 `docs/specs/verify.cmd`）+ 改动摘要（Codex 版含格式化兜底 + 读 dangerous-zones.txt 危险区扫描）|
+
+### 审计事件与反馈闭环
+
+危险命令/危险区拦截、验证失败、doctor/verification readiness 状态，以及可观察的显式授权模式结果，会追加为 JSONL 到 `$(git rev-parse --git-path harness/events.jsonl)`。授权结果在真实 `PostToolUse` 生命周期记录：`acceptEdits` 下完成的编辑记为 approval，`bypassPermissions` 下完成的受支持工具调用记为 bypass；[Claude Code](https://code.claude.com/docs/en/hooks) 与 [Codex](https://developers.openai.com/codex/hooks) 的默认模式一次性人工批准都没有稳定的结果字段，因此不伪造记录。事件只有 `timestamp`、`adapter`、`event`、`category`、`decision`、`exit_status` 六个字段；不记录原始提示词、完整 shell 命令、文件路径/内容、token 或环境变量。审计文件位于 `.git/harness/`（linked worktree 使用对应 git path），不会污染仓库；记录失败也不会阻塞正常 Hook 决策。
+
+每月按 `category + decision` 聚合一次事件，只处理重复出现且确有误用或漏拦截的模式：
+
+1. 对照相关任务复核原因，不从审计记录反推或补采原始敏感数据。
+2. 缺知识时更新 `docs/specs/`/playbook；缺提醒时加 advisory sensor；确认高风险且可判定时才加 blocking hook。
+3. 对长期无命中、重复或误报高的规则降级或删除，并用 harness 测试固定调整后的预期。
 
 ### 验证档位与 baseline
 
@@ -136,6 +150,7 @@ bash scripts/run-verification-profile.sh full --compare "$BASELINE_FILE"
 - 改了不该改的文件 → 往 `docs/specs/dangerous-zones.txt` 加路径
 - 用了错误命名 → 对应目录 `AGENTS.md` 加规则
 - 规格不准 → 改 `docs/specs/` 对应文档（跟代码同 PR 维护）
+- 权限边界不清 → 更新 `docs/specs/13_AGENT_POLICY.md`，不要靠会话中的临时承诺
 
 ## Changelog
 

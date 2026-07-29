@@ -18,6 +18,7 @@
 | `09_TECH_SOLUTION_TEMPLATE.md` / `10_TECH_SOLUTION_PLAYBOOK.md` | 技术方案模板与落地流程 |
 | `11_DANGEROUS_AREAS.md` | 风险分级 + 危险区清单（路径+为什么危险+改动前必做+红线）|
 | `12_TROUBLESHOOTING.md` | 已知问题与解法、调试入口 |
+| `13_AGENT_POLICY.md` | agent 显式权限边界；只使用 `Allowed` / `Blocked` / `Ask First` 三个顶层分组，覆盖破坏性操作、依赖、外网、危险区、业务语义与外部写入 |
 | `dangerous-zones.txt` | **机器可读**危险区路径清单，一行一个子串，`#` 注释；hooks 读取 |
 | `verify.cmd` | **机器可读 fast profile**；一行一个命令、支持 `#` 注释；Stop hook 按顺序执行，`init-specs.sh` 优先写入真实 typecheck/validate 脚本，人工核对（如 monorepo filter）|
 | `verify.full.cmd` | 可选的 **full profile** 增量命令；fast 通过后按顺序执行；只记录真实存在的 lint/build/test/smoke 脚本，不可编造 |
