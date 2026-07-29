@@ -9,6 +9,9 @@
 #   bash scripts/init-specs.sh --force         # 已存在也覆盖
 set -euo pipefail
 
+SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd -P)
+. "$SCRIPT_DIR/lib/specs-state.sh"
+
 TPL_ROOT="spec-templates"
 TOKEN_TPL_ROOT="token-templates"
 SPECS="docs/specs"
@@ -23,10 +26,20 @@ while [ $# -gt 0 ]; do
   esac
 done
 
-# 0. 以 00_PROJECT_FACTS.md 是否存在为准（不是看目录是否存在）
-if [ -f "$SPECS/00_PROJECT_FACTS.md" ] && [ "$FORCE" -ne 1 ]; then
-  echo "✋ $SPECS/00_PROJECT_FACTS.md 已存在 → 视为已初始化，跳过（--force 可强制覆盖）"
-  exit 0
+# 0. 先判断 specs 是否缺失、仍是草稿、或已复核激活
+if [ "$FORCE" -ne 1 ]; then
+  SPECS_STATE=$(specs_state ".")
+  case "$SPECS_STATE" in
+    active)
+      echo "✋ specs state=active：项目事实已复核，跳过初始化（--force 可强制覆盖）"
+      exit 0
+      ;;
+    draft)
+      echo "✋ specs state=draft：骨架已存在但尚未复核，不覆盖现有内容。"
+      echo "请按 docs/specs/_RULE.md 继续填充，并运行 bash scripts/doctor.sh --strict 验收。"
+      exit 0
+      ;;
+  esac
 fi
 
 # 1. 探测 flavor

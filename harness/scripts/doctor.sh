@@ -5,6 +5,9 @@
 # 自动判定，可用 --self / --project 强制。--strict：把"specs 未填/占位残留"从警告升级为失败（团队/CI 闸门）。
 # SessionStart hook 与手动执行均可。
 
+SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd -P)
+. "$SCRIPT_DIR/lib/specs-state.sh"
+
 MODE=""; STRICT=0
 for arg in "$@"; do
   case "$arg" in
@@ -100,13 +103,18 @@ fi
 [ -d ".claude/hooks" ] && echo "✅ .claude/hooks/" || warn "缺少 .claude/hooks/"
 [ -d ".codex/hooks" ] && echo "✅ .codex/hooks/" || warn "缺少 .codex/hooks/"
 
-# specs 就绪度 —— 以 docs/specs/00_PROJECT_FACTS.md 是否存在为准（不看目录是否存在）
+# specs 就绪度 —— 统一使用 missing / draft / active 三态
 # 默认 specs 未填只是警告（适合草稿期）；--strict 下升级为失败（适合团队/CI 强约束）
 specs_gate() { if [ "$STRICT" -eq 1 ]; then err "$1"; else warn "$1"; fi; }
-if [ -f "docs/specs/00_PROJECT_FACTS.md" ]; then
-  echo "✅ docs/specs/00_PROJECT_FACTS.md（specs 已初始化）"
+SPECS_STATE=$(specs_state ".")
+if [ "$SPECS_STATE" = "active" ]; then
+  echo "✅ specs state=active（项目事实已复核）"
   [ -f "docs/specs/dangerous-zones.txt" ] && echo "✅ docs/specs/dangerous-zones.txt（驱动危险区 hook）" || specs_gate "缺少 docs/specs/dangerous-zones.txt，危险区 hook 用通用兜底，建议补齐"
   [ -f "docs/specs/INDEX.md" ] && echo "✅ docs/specs/INDEX.md" || warn "缺少 docs/specs/INDEX.md"
+elif [ "$SPECS_STATE" = "draft" ]; then
+  specs_gate "specs state=draft（存在占位符、非 active 状态或 facts 未声明 active），继续填充并人工复核"
+  [ -f "docs/specs/dangerous-zones.txt" ] && echo "✅ docs/specs/dangerous-zones.txt（草稿，需校准）" || specs_gate "缺少 docs/specs/dangerous-zones.txt，危险区 hook 将使用通用兜底"
+  [ -f "docs/specs/INDEX.md" ] && echo "✅ docs/specs/INDEX.md（草稿）" || warn "缺少 docs/specs/INDEX.md"
   if grep -rl '<填写' docs/specs >/dev/null 2>&1; then
     n=$(grep -rl '<填写' docs/specs | wc -l | tr -d ' ')
     specs_gate "docs/specs 仍有 <填写：…> 占位符未填（$n 个文件），运行 /init-specs 或手动补齐"
@@ -115,7 +123,7 @@ if [ -f "docs/specs/00_PROJECT_FACTS.md" ]; then
     specs_gate "docs/specs 仍有 status: draft/template 未复核的文档，复核后改 active"
   fi
 else
-  specs_gate "specs 未初始化 —— 运行 bash scripts/init-specs.sh（任意 agent）或 /init-specs（Claude Code）生成 docs/specs/"
+  specs_gate "specs state=missing —— 运行 bash scripts/init-specs.sh（任意 agent）或 /init-specs（Claude Code）生成 docs/specs/"
 fi
 
 # hooks 执行权限

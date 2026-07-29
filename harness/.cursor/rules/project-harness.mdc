@@ -3,9 +3,10 @@ description: Project Harness rules (大厨管家 · 通用 · specs 外置)
 alwaysApply: true
 ---
 
-开始任何开发、排障、重构前，先读 `AGENTS.md` 与 `CLAUDE.md`，并以 `docs/specs/` 作为本项目事实来源：
-- `docs/specs/00_PROJECT_FACTS.md` 存在 → 先读它与 `docs/specs/INDEX.md`，其余按需 `head`/`grep`。
-- 不存在 → 按 `spec-templates/` 规则探索项目生成（Claude Code 用 `/init-specs`；其它 agent 跑 `bash scripts/init-specs.sh` 再填充）。
+开始任何开发、排障、重构前，先读 `AGENTS.md` 与 `CLAUDE.md`。只有 `active` 的 `docs/specs/` 才是项目事实：
+- `active`：facts 存在、无占位符、文档状态均为 `active` → 先读 facts 与 `INDEX.md`，其余按需查阅。
+- `draft`：仍有占位符、`draft/template` 状态或 facts 未声明 `active` → 先按 `_RULE.md` 填充并复核，不得当作事实。
+- `missing`：facts 不存在 → 跑 `bash scripts/init-specs.sh`，再填充并复核。
 
 团队两类项目（harness 通用，由 specs 区分）：PC 微前端类（Vue3 + micro-app + dcgj-ui + @platform/http-client）；uni-app 多端类（uni-app + Vue3 + uview-plus，`#ifdef/#ifndef` 条件编译）。
 

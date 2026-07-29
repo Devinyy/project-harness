@@ -6,8 +6,10 @@
 
 **核心理念：harness 不内置任何项目的真实 specs，只带「生成规则」（`spec-templates/`）。**
 - specs 由每个项目在自己根目录的 `docs/specs/` 维护。
-- **是否「已初始化」一律以 `docs/specs/00_PROJECT_FACTS.md` 是否存在为准**（不看 `docs/specs/` 目录是否存在——空目录不算已初始化）。
-  - 未初始化 → 见下方「初始化」；已初始化 → agent 先读 `00_PROJECT_FACTS.md` + `INDEX.md`，其余按需查阅。
+- Specs 使用 `missing / draft / active` 三态，不再用单个文件是否存在代表可用：
+  - `missing`：facts 不存在 → 见下方「初始化」。
+  - `draft`：骨架存在但有占位符、未复核状态 → 继续填充，不得作为项目事实。
+  - `active`：facts 存在、无占位符、状态均为 `active` → agent 才能先读 facts + `INDEX.md` 作为真实事实。
 - 危险区等机制由 specs **驱动**（hook 读 `docs/specs/dangerous-zones.txt`、类型检查读 `docs/specs/verify.cmd`），harness 本体保持通用、可移植。
 - **架构/组件约定是固定基线**：`spec-templates` 的 `02_ARCHITECTURE`（MVVM 通用分层模型）与 `05_COMPONENT_PATTERNS`（拆分原则）带不随项目改写的固定段，项目只在其上补特例——跨项目架构一致，且组件拆分有可判定规则（配 `check-large-file.sh` 门禁）。
 

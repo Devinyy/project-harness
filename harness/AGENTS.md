@@ -5,9 +5,10 @@ Claude Code 用户同时阅读 `CLAUDE.md`。
 
 ## 第一步：读取本项目事实
 
-本仓库真实事实以 `docs/specs/` 为准；**是否已初始化以 `docs/specs/00_PROJECT_FACTS.md` 是否存在为准（不要以目录是否存在判断）**：
-- `docs/specs/00_PROJECT_FACTS.md` 存在 → 先读它与 `docs/specs/INDEX.md`，其余按需 `head`/`grep`。
-- 不存在（哪怕有空 `docs/specs/` 目录）→ 先生成：
+本仓库真实事实以已复核的 `docs/specs/` 为准。Specs 分三种状态：
+- `active`：`00_PROJECT_FACTS.md` 存在、没有 `<填写…>` 等占位符，且文档状态均为 `active` → 才能作为真实事实；先读它与 `INDEX.md`，其余按需 `head`/`grep`。
+- `draft`：骨架存在但仍有占位符、`draft/template` 状态或 facts 未声明 `active` → 不得当作项目事实，先按 `docs/specs/_RULE.md` 继续填充并人工复核。
+- `missing`：`00_PROJECT_FACTS.md` 不存在（哪怕有空 `docs/specs/` 目录）→ 先生成：
   - Claude Code：运行 `/init-specs`
   - Codex / Cursor / Windsurf / 人：运行 `bash scripts/init-specs.sh`（复制骨架）→ 再按 `docs/specs/_RULE.md` 填充占位符
 

@@ -6,10 +6,11 @@
 
 ## 第一步：读取本项目事实
 
-**本仓库的真实事实以 `docs/specs/` 为准，是否「已初始化」以 `docs/specs/00_PROJECT_FACTS.md` 是否存在为准（不要以 `docs/specs/` 目录是否存在判断）。**
+**本仓库的真实事实以状态为 `active` 的 `docs/specs/` 为准。**
 
-- 若 `docs/specs/00_PROJECT_FACTS.md` **存在** → 先读它（栈/命令/目录/认证）和 `docs/specs/INDEX.md`（文档清单），其余文档按需 `head`/`grep` 查阅，不要预加载全文。
-- 若 `docs/specs/00_PROJECT_FACTS.md` **不存在**（即使有空的 `docs/specs/` 目录）→ 先生成：运行 `/init-specs`（或 `bash scripts/init-specs.sh` + 填充），再继续。
+- `active`：`00_PROJECT_FACTS.md` 存在、没有 `<填写…>` 等占位符，且文档状态均为 `active` → 先读 facts 与 `INDEX.md`，其余按需 `head`/`grep`。
+- `draft`：骨架存在但仍有占位符、`draft/template` 状态或 facts 未声明 `active` → 不得作为项目事实，先按 `_RULE.md` 填充并人工复核。
+- `missing`：`00_PROJECT_FACTS.md` 不存在（即使有空目录）→ 运行 `/init-specs`（或 `bash scripts/init-specs.sh` + 填充），再继续。
 
 > 团队有两类项目，harness 通用，由 `docs/specs/` 区分当前是哪一类：
 > - **PC 微前端类**（如 dc-platform）：Vue3 + `@micro-zoe/micro-app` monorepo + dcgj-ui + `@platform/http-client`，基座 `apps/micro-main` + 子应用。
