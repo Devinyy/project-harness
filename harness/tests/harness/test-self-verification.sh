@@ -61,7 +61,8 @@ if [ ! -e "$codex_marker" ]; then
 else
   fail "Codex self Stop hook never invokes pnpm"
 fi
-assert_contains "$codex_output" '"continue": false' "Codex self Stop hook allows completion"
+codex_continue=$(printf '%s' "$codex_output" | jq -r '.continue' 2>/dev/null)
+assert_eq "false" "$codex_continue" "Codex self Stop hook allows completion"
 
 mkdir -p "$FIXTURE_ROOT/active/docs/specs"
 printf '%s\n' '---' 'status: active' '---' 'project: fixture' > "$FIXTURE_ROOT/active/docs/specs/00_PROJECT_FACTS.md"

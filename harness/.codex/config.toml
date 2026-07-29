@@ -13,18 +13,15 @@ project_doc_fallback_filenames = ["CLAUDE.md"]
 # [features]
 # codex_hooks = true
 #
-# ⚠️ 待你按所装 Codex 版本核验（本配置未在真实 Codex 上验证）：
-#   1) hooks 协议字段名（SessionStart/PreToolUse/PostToolUse/Stop、matcher、type/command/timeout）是否与你的 Codex 版本一致；
-#   2) PreToolUse/PostToolUse 的 matcher —— 下面用 "Bash" 匹配执行命令的工具，但部分 Codex 版本工具名是
-#      exec_command / shell / local_shell。若拦截不生效，把 matcher 改成你版本的真实工具名。
-#   hooks 脚本内部已用 `jq '.tool_input.command // empty'` 自过滤：matcher 偏宽不会误伤（非命令工具会直接放行），
-#   偏窄才会“看起来配了其实没拦”。校验方法：执行一条 `rm -rf x` 看是否被 block-dangerous-commands 拦下。
+# ⚠️ 待你按所装 Codex 版本核验 hooks 协议字段名是否一致。
+# 命令工具覆盖 Bash/exec_command 等别名；写入工具覆盖 apply_patch/Edit/Write。
+# 所有仓库内 Hook 都从 Git 根目录解析，避免在子目录执行时失效。
 
 [[hooks.SessionStart]]
 
 [[hooks.SessionStart.hooks]]
 type = "command"
-command = 'bash scripts/doctor.sh'
+command = 'bash "$(git rev-parse --show-toplevel)/scripts/doctor.sh"'
 timeout = 10
 
 [[hooks.PreToolUse]]
@@ -32,20 +29,28 @@ matcher = "Bash|shell|exec_command|local_shell"
 
 [[hooks.PreToolUse.hooks]]
 type = "command"
-command = 'bash .codex/hooks/block-dangerous-commands.sh'
+command = 'bash "$(git rev-parse --show-toplevel)/.codex/hooks/block-dangerous-commands.sh"'
+timeout = 10
+
+[[hooks.PreToolUse]]
+matcher = "apply_patch|Edit|Write"
+
+[[hooks.PreToolUse.hooks]]
+type = "command"
+command = 'bash "$(git rev-parse --show-toplevel)/.codex/hooks/guard-dangerous-zones.sh"'
 timeout = 10
 
 [[hooks.PostToolUse]]
-matcher = "Bash|shell|exec_command|local_shell"
+matcher = "Bash|shell|exec_command|local_shell|apply_patch|Edit|Write"
 
 [[hooks.PostToolUse.hooks]]
 type = "command"
-command = 'bash .codex/hooks/format-on-write.sh'
+command = 'bash "$(git rev-parse --show-toplevel)/.codex/hooks/format-on-write.sh"'
 timeout = 15
 
 [[hooks.Stop]]
 
 [[hooks.Stop.hooks]]
 type = "command"
-command = 'bash .codex/hooks/verify-before-stop.sh'
+command = 'bash "$(git rev-parse --show-toplevel)/.codex/hooks/verify-before-stop.sh"'
 timeout = 30
