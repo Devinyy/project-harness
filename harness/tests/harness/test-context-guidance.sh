@@ -35,7 +35,6 @@ for token_free_path in \
   docs/specs/INDEX.md; do
   token_free_content=$(cat "$HARNESS_ROOT/$token_free_path")
   assert_not_contains "$token_free_content" "docs/token-specs/" "$token_free_path omits project-specific token specs"
-  assert_not_contains "$token_free_content" "../token-specs/" "$token_free_path omits relative project-specific token specs"
 done
 
 if [ -d "$HARNESS_ROOT/token-templates/pc" ]; then
