@@ -77,6 +77,14 @@ assert_not_contains "$minimal_agents" "#ifdef / #ifndef" "minimal AGENTS context
 minimal_claude=$(sed -n '1,100p' "$HARNESS_ROOT/CLAUDE.md")
 assert_contains "$minimal_claude" "AGENTS.md" "minimal CLAUDE context delegates to AGENTS"
 assert_contains "$minimal_claude" "/init-specs" "minimal CLAUDE context exposes initialization"
+assert_contains "$minimal_claude" ".claude/commands/<name>.md" "minimal CLAUDE context routes playbooks"
+assert_contains "$minimal_claude" "dangerous-zones.txt" "minimal CLAUDE context routes dangerous-zone hooks"
+assert_contains "$minimal_claude" "缺失时使用兜底" "minimal CLAUDE context preserves dangerous-zone fallback"
+assert_contains "$minimal_claude" "verify-harness.sh" "minimal CLAUDE context names the verification hook"
+assert_contains "$minimal_claude" "harness 自检时运行测试" "minimal CLAUDE context verifies the harness itself"
+assert_contains "$minimal_claude" '项目 specs 为 `active` 时运行 fast profile' "minimal CLAUDE context runs fast profile for active specs"
+assert_contains "$minimal_claude" "非 active 时失败关闭" "minimal CLAUDE context fails closed for non-active specs"
+assert_contains "$minimal_claude" "不得绕过拦截" "minimal CLAUDE context prohibits bypassing hooks"
 assert_not_contains "$minimal_claude" "## 思维方式" "minimal CLAUDE context omits duplicate guidance"
 
 agents_line_count=$(awk 'END { print NR }' "$HARNESS_ROOT/AGENTS.md")
