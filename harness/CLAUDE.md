@@ -8,7 +8,7 @@
 
 - specs 缺失时运行 `/init-specs`。
 - 任务 playbook 位于 `.claude/commands/<name>.md`：`new-page`、`debug`、`refactor`、`review`、`tech-solution`。
-- 危险区 hook 读取 `dangerous-zones.txt`（缺失时使用兜底）。Stop hook 始终运行 fast verification profile；非 `active` specs 会失败关闭。不得绕过拦截。
+- 危险区 hook 读取 `dangerous-zones.txt`（缺失时使用兜底）。Stop hook 经 `verify-harness.sh`：harness 自检时运行测试；项目 specs 为 `active` 时运行 fast profile；非 active 时失败关闭。不得绕过拦截。
 
 ## 最终检查
 
