@@ -63,48 +63,48 @@ git commit -m "test(harness): define minimal context contract"
 - Modify: `harness/AGENTS.md`
 - Test: `harness/tests/harness/test-context-guidance.sh`
 
-- [ ] **Step 1: 用下列入口内容替换 `AGENTS.md`（上限 45 行）**
+- [ ] **Step 1: 用下列最终入口内容替换 `AGENTS.md`（不超过 45 行；最终为 32 行）**
 
 ```markdown
 # AGENTS.md
 
-跨 agent 共享入口（Claude Code / Codex / Cursor / Windsurf）。Claude Code 另读 `CLAUDE.md` 的专属入口。
+所有 AI 编码 agent 的共享入口；Claude Code 用户同时阅读 `CLAUDE.md`。
 
-## 先判断 specs 状态
+## Specs 状态
 
-项目事实只来自 `docs/specs/`：
+- **active**：`docs/specs/00_PROJECT_FACTS.md` 存在、无 `<填写…>` 等占位符且文档状态均为 `active`，才是项目事实；先读它与 `docs/specs/INDEX.md`。
+- **draft**：有骨架、占位符或 `draft/template` 状态时，不得当作项目事实；按 `docs/specs/_RULE.md` 填充并人工复核。
+- **missing**：缺少 `00_PROJECT_FACTS.md`（即使有空 `docs/specs/` 目录）时，Claude Code 运行 `/init-specs`；其余运行 `bash scripts/init-specs.sh`，再按 `_RULE.md` 填充并人工复核。
 
-- `active`：`00_PROJECT_FACTS.md` 存在、无 `<填写…>` 占位符且文档状态均为 `active`；先读 `00_PROJECT_FACTS.md` 与 `INDEX.md`。
-- `draft`：有骨架、占位符或 `draft/template` 状态；不得将其当事实，按 `docs/specs/_RULE.md` 填充并等待人工复核。
-- `missing`：缺少 `00_PROJECT_FACTS.md`；Claude Code 运行 `/init-specs`，其余 agent 运行 `bash scripts/init-specs.sh` 后按 `_RULE.md` 填充。
+不得全量加载 specs，也不得把模板当作项目事实。
 
-若 specs 为 `active`，在涉及授权边界的操作前读取 `docs/specs/13_AGENT_POLICY.md`：只在 `Allowed` 和用户任务范围内执行；`Ask First` 先征得明确同意；`Blocked` 不执行。
+## 授权
 
-## 跨项目边界
+Specs 为 active 时，任何可能涉及授权边界的动作前先读 `docs/specs/13_AGENT_POLICY.md`：`Allowed` 在用户范围内执行，`Ask First` 先取得同意，`Blocked` 不执行。
 
-- 改动前先读目标及其现有调用/同类实现；优先复用项目已有模式。
-- 不编造字段、接口、目录、框架或 UI 库；业务语义不明时询问或留下 `TODO: 待确认`。
-- 未获明确需求，不改公共基础设施、认证/请求封装、全局配置或无关代码。
-- 页面和数据层遵循 active specs；完成前运行可用验证，并如实报告未执行项。
+## 边界
+
+1. 先读现有实现与项目事实，优先复用已有模式、组件和封装。
+2. 不得编造字段、API、目录、框架或 UI；语义不明时询问，或标记 `TODO`。
+3. 无明确需求，不改公共基础设施、认证/请求封装、全局配置或无关代码。
+4. 完成前验证，并披露未执行的验证及原因。
 
 ## 按需路由
 
-| 情况 | 先读 |
+| 需要 | 读取或执行 |
 | --- | --- |
-| 新页面、排障、重构、审查、技术方案 | `.claude/commands/<name>.md`（所有 agent 均可按需打开） |
-| 项目类型、架构、业务、规范、组件、接口、UI | `docs/specs/INDEX.md` 后只读取所需文档 |
-| 路由、权限、认证、请求、构建或全局配置 | `docs/specs/11_DANGEROUS_AREAS.md`；危险路径见 `docs/specs/dangerous-zones.txt` |
-| 验证 | `bash scripts/run-verification-profile.sh fast`；需要时再运行 `full` |
-| UI/token | `docs/specs/06_UI_COMPONENT_GUIDE.md` 与 `docs/token-specs/README.md` |
-
-禁止全量加载 specs 或把模板当项目事实。
+| 任务流程 | `.claude/commands/<name>.md` playbook |
+| 项目文档 | `docs/specs/INDEX.md`，再按需读取 |
+| 危险区 | `docs/specs/11_DANGEROUS_AREAS.md` 与 `docs/specs/dangerous-zones.txt` |
+| 验证 | `bash scripts/run-verification-profile.sh fast`；需要时用 `full` |
+| UI | `docs/token-specs/README.md`、`docs/token-specs/Light.tokens.json`、`docs/token-specs/antd-vue-theme.ts`；有 Figma 链接或截图时参照相关 playbook 完成列表 / 新建编辑 / 详情的视觉验收 |
 ```
 
 - [ ] **Step 2: 运行目标测试，确认新契约通过**
 
 Run: `bash tests/harness/test-context-guidance.sh`
 
-Expected: PASS，所有既有 specs 状态断言与新增最小入口断言通过。
+Expected: PASS，所有既有 specs 状态断言与新增最小入口断言通过；`AGENTS.md` 不超过 45 行（最终为 32 行）。
 
 - [ ] **Step 3: 提交跨 agent 根入口**
 
