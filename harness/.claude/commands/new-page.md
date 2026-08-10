@@ -8,11 +8,13 @@
 2. 搜索同类页面作骨架参考：
    - PC 微前端：`find apps/*/src/views -name "*.vue" | head -10`，确认所属子应用
    - uni-app 多端：`find src/pages -name "*-page.vue" | head -10`，新页面放 `src/pages/<模块>/<xxx>-page.vue`
-3. 确认：路由路径、数据来源（api/service）、状态方式（local/composable/store）、权限要求
-4. 拆分预判（写代码前先列结构，避免巨型单文件）：把页面规划成「容器页 + N 个子组件」——模板里 ≥3 个语义区块 / 重复结构 / `v-for` item > ~30 行 / 弹窗表单 都各自成组件；业务逻辑抽到 `useXxxPage` composable，页面只做编排。详见 `docs/specs/05_COMPONENT_PATTERNS.md`「拆分原则」。单文件 > ~500 行视为应拆信号（hook 会提示）。
-5. 按现有风格创建 Vue 3 SFC（`<script setup lang="ts">`）+ 对应 UI 库（dcgj-ui / uview-plus），覆盖 loading/empty/error/正常渲染；按第 4 步清单分别建子组件，页面只负责取数与组合
-6. 数据层：PC 经 `@platform/http-client`（`import request from '@/request'`）；uni-app 在 `src/api/<领域>.ts` 经 `@/utils/request`，不要裸 `uni.request`
-7. uni-app 必做：把新页面登记到 `src/pages.json`
-8. 运行 `docs/specs/00_PROJECT_FACTS.md` 中声明的类型检查命令
+3. 若需求附带 Figma 链接或截图：记录目标 Frame/node（截图无 node 时记录截图范围），先判断是列表、新建/编辑或详情，再只读取 `docs/specs/examples/` 中对应页面类型的真实示例；提取页面层级、关键间距、固定区域、滚动容器、组件状态和目标视口。示例只提供结构与状态模式，字段/尺寸/操作以 Figma + PRD 为准。
+4. 确认：路由路径、数据来源（api/service）、状态方式（local/composable/store）、权限要求
+5. 拆分预判（写代码前先列结构，避免巨型单文件）：把页面规划成「容器页 + N 个子组件」——模板里 ≥3 个语义区块 / 重复结构 / `v-for` item > ~30 行 / 弹窗表单 都各自成组件；业务逻辑抽到 `useXxxPage` composable，页面只做编排。详见 `docs/specs/05_COMPONENT_PATTERNS.md`「拆分原则」。单文件 > ~500 行视为应拆信号（hook 会提示）。
+6. 按现有风格创建 Vue 3 SFC（`<script setup lang="ts">`）+ 对应 UI 库（dcgj-ui / uview-plus），覆盖 loading/empty/error/正常渲染；按第 5 步清单分别建子组件，页面只负责取数与组合。PC 页面从 `docs/specs/dcgj-components/COMPONENT_INDEX.md` 选择当前版本已验证的组件，不凭模板假设组件存在。
+7. 数据层：PC 经 `@platform/http-client`（`import request from '@/request'`）；uni-app 在 `src/api/<领域>.ts` 经 `@/utils/request`，不要裸 `uni.request`
+8. uni-app 必做：把新页面登记到 `src/pages.json`
+9. 运行 `docs/specs/00_PROJECT_FACTS.md` 中声明的类型检查命令
+10. 有设计输入时做视觉验收：按项目 specs 声明的基准/最小/宽屏视口截图，对照 Figma 检查区块顺序、尺寸间距、滚动归属、固定区和 loading/empty/error/disabled/展开/弹层等状态；记录仍无法从设计或 PRD 确认的差异。
 
 需求描述：$ARGUMENTS

@@ -12,7 +12,7 @@
 | `03_BUSINESS_DOMAIN.md` | 业务实体、状态流转、术语、权限/角色 |
 | `04_CODING_STANDARDS.md` | 命名、类型、样式、错误处理、提交规范 |
 | `05_COMPONENT_PATTERNS.md` | 组件拆分与复用、props/事件、状态选择；**「拆分原则」是 harness 固定基线（可判定触发条件 + 页面只做编排，保留不改）** |
-| `06_UI_COMPONENT_GUIDE.md` | UI 库选型用法、图标/图片素材规则 |
+| `06_UI_COMPONENT_GUIDE.md` | UI 库选型用法、图标/图片素材规则；PC 含 Figma/截图页面类型路由与视觉验收口径 |
 | `07_API_CONTRACTS.md` | 请求/响应结构、错误码、接入步骤、DTO→VM |
 | `08_TASK_PLAYBOOKS.md` | 常见任务标准步骤 |
 | `09_TECH_SOLUTION_TEMPLATE.md` / `10_TECH_SOLUTION_PLAYBOOK.md` | 技术方案模板与落地流程 |
@@ -23,6 +23,8 @@
 | `verify.cmd` | **机器可读 fast profile**；一行一个命令、支持 `#` 注释；Stop hook 按顺序执行，`init-specs.sh` 优先写入真实 typecheck/validate 脚本，人工核对（如 monorepo filter）|
 | `verify.full.cmd` | 可选的 **full profile** 增量命令；fast 通过后按顺序执行；只记录真实存在的 lint/build/test/smoke 脚本，不可编造 |
 | 目录级 `AGENTS.md` | 在 flavor 列出的关键目录下生成局部约束 |
+
+PC 的 `dcgj-components/COMPONENT_INDEX.md` 必须从实际锁定版本、组件库导出入口与项目真实调用取证。`examples/` 只允许从真实页面提炼；有设计输入时按列表、新建/编辑、详情分类，并明确示例不是字段、尺寸或操作的事实来源。
 
 ## 文档头部（每份 md）
 
