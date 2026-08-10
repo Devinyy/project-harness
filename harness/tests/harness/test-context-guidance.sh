@@ -56,11 +56,23 @@ changelog=$(sed -n '1,100p' "$HARNESS_ROOT/CHANGELOG.md")
 assert_contains "$changelog" "Figma / 截图上下文路由" "changelog explains the new design-input mechanism"
 
 minimal_agents=$(sed -n '1,140p' "$HARNESS_ROOT/AGENTS.md")
+assert_contains "$minimal_agents" "**active**" "minimal AGENTS context defines the active specs state"
+assert_contains "$minimal_agents" "**draft**" "minimal AGENTS context defines the draft specs state"
+assert_contains "$minimal_agents" "**missing**" "minimal AGENTS context defines the missing specs state"
 assert_contains "$minimal_agents" "docs/specs/00_PROJECT_FACTS.md" "minimal AGENTS context loads project facts"
 assert_contains "$minimal_agents" "docs/specs/11_DANGEROUS_AREAS.md" "minimal AGENTS context loads dangerous areas"
+assert_contains "$minimal_agents" "docs/specs/13_AGENT_POLICY.md" "minimal AGENTS context routes authorization policy"
 assert_contains "$minimal_agents" "run-verification-profile.sh" "minimal AGENTS context routes verification"
 assert_contains "$minimal_agents" ".claude/commands/<name>.md" "minimal AGENTS context routes commands"
+assert_contains "$minimal_agents" "优先复用已有模式" "minimal AGENTS context preserves reuse boundary"
+assert_contains "$minimal_agents" "不得编造字段、API、目录、框架或 UI" "minimal AGENTS context preserves no-invention boundary"
+assert_contains "$minimal_agents" "不改公共基础设施、认证/请求封装、全局配置或无关代码" "minimal AGENTS context preserves infrastructure boundary"
+assert_contains "$minimal_agents" "完成前验证" "minimal AGENTS context preserves verification boundary"
 assert_not_contains "$minimal_agents" '基座 `apps/micro-main` + 子应用' "minimal AGENTS context omits retired architecture guidance"
+assert_not_contains "$minimal_agents" "Vue3 + micro-app + dcgj-ui" "minimal AGENTS context omits PC implementation details"
+assert_not_contains "$minimal_agents" "uni-app + Vue3 + uview-plus" "minimal AGENTS context omits miniapp implementation details"
+assert_not_contains "$minimal_agents" "@platform/http-client" "minimal AGENTS context omits platform client details"
+assert_not_contains "$minimal_agents" "#ifdef / #ifndef" "minimal AGENTS context omits preprocessor details"
 
 minimal_claude=$(sed -n '1,100p' "$HARNESS_ROOT/CLAUDE.md")
 assert_contains "$minimal_claude" "AGENTS.md" "minimal CLAUDE context delegates to AGENTS"
@@ -80,5 +92,14 @@ if [ "$claude_line_count" -le 20 ]; then
 else
   fail "CLAUDE stays within the minimal line budget (expected<=20 actual=$claude_line_count)"
 fi
+
+for root_instruction_file in "$HARNESS_ROOT/AGENTS.md" "$HARNESS_ROOT/CLAUDE.md"; do
+  root_instruction_name=$(basename "$root_instruction_file")
+  if [ -s "$root_instruction_file" ] && [ "$(tail -c 1 "$root_instruction_file" | od -An -t x1 | tr -d '[:space:]')" = "0a" ]; then
+    pass "$root_instruction_name ends with LF"
+  else
+    fail "$root_instruction_name must be non-empty and end with LF"
+  fi
+done
 
 finish_tests
