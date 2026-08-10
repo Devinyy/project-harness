@@ -24,6 +24,25 @@ assert_not_contains "$agents" "docs/token-specs/" "cross-agent guidance omits pr
 assert_not_contains "$agents" "Light.tokens.json" "cross-agent guidance omits project-specific token files"
 assert_not_contains "$agents" "antd-vue-theme.ts" "cross-agent guidance omits project-specific theme files"
 
+for token_free_path in \
+  scripts/init-specs.sh \
+  README.md \
+  spec-templates/pc-microapp/04_CODING_STANDARDS.md \
+  spec-templates/pc-microapp/06_UI_COMPONENT_GUIDE.md \
+  spec-templates/pc-microapp/INDEX.md \
+  docs/specs/04_CODING_STANDARDS.md \
+  docs/specs/06_UI_COMPONENT_GUIDE.md \
+  docs/specs/INDEX.md; do
+  token_free_content=$(cat "$HARNESS_ROOT/$token_free_path")
+  assert_not_contains "$token_free_content" "docs/token-specs/" "$token_free_path omits project-specific token specs"
+done
+
+if [ -d "$HARNESS_ROOT/token-templates/pc" ]; then
+  pass "PC token template assets remain available without default generation"
+else
+  fail "PC token template assets remain available without default generation"
+fi
+
 new_page=$(sed -n '1,220p' "$HARNESS_ROOT/.claude/commands/new-page.md")
 assert_contains "$new_page" "拆分预判" "new-page preserves the v2.9 component split preflight"
 assert_contains "$new_page" "Figma 链接或截图" "new-page routes design inputs before implementation"

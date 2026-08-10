@@ -140,6 +140,7 @@ prepare_initializer_fixture() {
   local project_root="$1"
   mkdir -p "$project_root"
   cp -R "$HARNESS_ROOT/spec-templates" "$project_root/spec-templates"
+  cp -R "$HARNESS_ROOT/token-templates" "$project_root/token-templates"
 }
 
 pc_root="$FIXTURE_ROOT/init-pc"
@@ -163,6 +164,11 @@ assert_eq "pnpm run validate" "$pc_fast" "PC initializer discovers the real type
 assert_contains "$pc_full" "pnpm run lint" "PC full profile discovers lint"
 assert_contains "$pc_full" "pnpm run build" "PC full profile discovers build"
 assert_contains "$pc_full" "pnpm run test" "PC full profile includes an existing test script"
+if [ ! -e "$pc_root/docs/token-specs" ]; then
+  pass "PC initializer does not generate project-specific token specs"
+else
+  fail "PC initializer does not generate project-specific token specs"
+fi
 
 mini_root="$FIXTURE_ROOT/init-mini"
 prepare_initializer_fixture "$mini_root"
