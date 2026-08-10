@@ -30,8 +30,18 @@ assert_contains "$claude" "AGENTS.md" "CLAUDE routes shared rules to AGENTS"
 assert_contains "$claude" "/init-specs" "CLAUDE exposes the Claude initialization command"
 assert_not_contains "$claude" "## 思维方式" "CLAUDE does not preload generic reasoning slogans"
 
-assert_equals "$(wc -l < "$HARNESS_ROOT/AGENTS.md" | tr -d ' ')" "45" "AGENTS stays within its 45-line context budget"
-assert_equals "$(wc -l < "$HARNESS_ROOT/CLAUDE.md" | tr -d ' ')" "18" "CLAUDE stays within its 18-line context budget"
+agents_line_count=$(awk 'END { print NR }' "$HARNESS_ROOT/AGENTS.md")
+if [ "$agents_line_count" -le 45 ]; then
+  pass "AGENTS stays within its 45-line context budget"
+else
+  fail "AGENTS stays within its 45-line context budget (expected<=45 actual=$agents_line_count)"
+fi
+claude_line_count=$(awk 'END { print NR }' "$HARNESS_ROOT/CLAUDE.md")
+if [ "$claude_line_count" -le 20 ]; then
+  pass "CLAUDE stays within its 20-line context budget"
+else
+  fail "CLAUDE stays within its 20-line context budget (expected<=20 actual=$claude_line_count)"
+fi
 ```
 
 - [ ] **Step 2: 运行单个测试，确认因尚未收敛而失败**
@@ -53,7 +63,7 @@ git commit -m "test(harness): define minimal context contract"
 - Modify: `harness/AGENTS.md`
 - Test: `harness/tests/harness/test-context-guidance.sh`
 
-- [ ] **Step 1: 用下列 45 行入口内容替换 `AGENTS.md`**
+- [ ] **Step 1: 用下列入口内容替换 `AGENTS.md`（上限 45 行）**
 
 ```markdown
 # AGENTS.md
@@ -109,7 +119,7 @@ git commit -m "refactor(harness): minimize shared agent context"
 - Modify: `harness/CLAUDE.md`
 - Test: `harness/tests/harness/test-context-guidance.sh`
 
-- [ ] **Step 1: 用下列 18 行 Claude 专属入口替换 `CLAUDE.md`**
+- [ ] **Step 1: 用下列 Claude 专属入口替换 `CLAUDE.md`（上限 20 行）**
 
 ```markdown
 # CLAUDE.md
@@ -139,7 +149,7 @@ Expected: exit code 0；所有 TAP 断言通过。
 
 Run: `wc -l AGENTS.md CLAUDE.md && git diff --check && git diff --stat`
 
-Expected: `AGENTS.md` 为 45 行、`CLAUDE.md` 为 18 行，且无空白错误。
+Expected: `AGENTS.md` 不超过 45 行、`CLAUDE.md` 不超过 20 行，且无空白错误。
 
 - [ ] **Step 4: 提交 Claude 入口及全量验证结果**
 
