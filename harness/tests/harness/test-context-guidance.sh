@@ -20,6 +20,9 @@ agents=$(sed -n '1,180p' "$HARNESS_ROOT/AGENTS.md")
 assert_contains "$agents" "Figma 链接或截图" "cross-agent guidance routes design inputs"
 assert_contains "$agents" "列表 / 新建编辑 / 详情" "cross-agent guidance classifies page archetypes"
 assert_contains "$agents" "视觉验收" "cross-agent guidance requires visual acceptance"
+assert_not_contains "$agents" "docs/token-specs/" "cross-agent guidance omits project-specific token directories"
+assert_not_contains "$agents" "Light.tokens.json" "cross-agent guidance omits project-specific token files"
+assert_not_contains "$agents" "antd-vue-theme.ts" "cross-agent guidance omits project-specific theme files"
 
 new_page=$(sed -n '1,220p' "$HARNESS_ROOT/.claude/commands/new-page.md")
 assert_contains "$new_page" "拆分预判" "new-page preserves the v2.9 component split preflight"

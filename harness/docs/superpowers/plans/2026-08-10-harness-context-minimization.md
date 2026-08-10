@@ -97,7 +97,7 @@ Specs 为 active 时，任何可能涉及授权边界的动作前先读 `docs/sp
 | 项目文档 | `docs/specs/INDEX.md`，再按需读取 |
 | 危险区 | `docs/specs/11_DANGEROUS_AREAS.md` 与 `docs/specs/dangerous-zones.txt` |
 | 验证 | `bash scripts/run-verification-profile.sh fast`；需要时用 `full` |
-| UI | `docs/token-specs/README.md`、`docs/token-specs/Light.tokens.json`、`docs/token-specs/antd-vue-theme.ts`；有 Figma 链接或截图时参照相关 playbook 完成列表 / 新建编辑 / 详情的视觉验收 |
+| UI | `docs/specs/06_UI_COMPONENT_GUIDE.md`；有 Figma 链接或截图时参照相关 playbook 完成列表 / 新建编辑 / 详情的视觉验收 |
 ```
 
 - [ ] **Step 2: 运行目标测试，确认新契约通过**
