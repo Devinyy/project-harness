@@ -132,7 +132,7 @@ git commit -m "refactor(harness): minimize shared agent context"
 
 - specs 缺失时运行 `/init-specs`；它负责脚手架与后续填充流程。
 - 任务需要现成 playbook 时，打开 `.claude/commands/<name>.md`：`new-page`、`debug`、`refactor`、`review`、`tech-solution`。
-- hooks 使用 active specs 的 `dangerous-zones.txt` 与 verification profile；不要绕过拦截。
+- 危险区 hook 读取 `dangerous-zones.txt`，缺失时使用兜底；Stop hook 始终运行 fast verification profile，非 `active` specs 时失败关闭；不要绕过拦截。
 
 ## 最终检查
 
