@@ -4,9 +4,9 @@
 
 ## Specs 状态
 
-- **active**：`docs/specs/00_PROJECT_FACTS.md` 存在、无 `<填写…>` 等占位符且状态为 `active`，才是项目事实；先读它与 `docs/specs/INDEX.md`。
-- **draft**：不得当作项目事实；按 `docs/specs/_RULE.md` 填充并人工复核。
-- **missing**：Claude Code 运行 `/init-specs`；其余运行 `bash scripts/init-specs.sh`，再按 `_RULE.md` 填充并人工复核。
+- **active**：`docs/specs/00_PROJECT_FACTS.md` 存在、无 `<填写…>` 等占位符且文档状态均为 `active`，才是项目事实；先读它与 `docs/specs/INDEX.md`。
+- **draft**：有骨架、占位符或 `draft/template` 状态时，不得当作项目事实；按 `docs/specs/_RULE.md` 填充并人工复核。
+- **missing**：缺少 `00_PROJECT_FACTS.md`（即使有空 `docs/specs/` 目录）时，Claude Code 运行 `/init-specs`；其余运行 `bash scripts/init-specs.sh`，再按 `_RULE.md` 填充并人工复核。
 
 不得全量加载 specs，也不得把模板当作项目事实。
 
