@@ -8,7 +8,7 @@
 
 - specs 缺失时运行 `/init-specs`。
 - 任务 playbook 位于 `.claude/commands/<name>.md`：`new-page`、`debug`、`refactor`、`review`、`tech-solution`。
-- hooks 使用 active specs 的 `dangerous-zones.txt` 与 verification profile，不得绕过。
+- 危险区 hook 读取 `dangerous-zones.txt`（缺失时使用兜底）；active specs 时 Stop hook 运行 fast verification profile；不得绕过拦截。
 
 ## 最终检查
 
