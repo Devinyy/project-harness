@@ -43,7 +43,13 @@
 │       ├── 00_PROJECT_FACTS.md … 13_AGENT_POLICY.md  INDEX.md  dangerous-zones.txt
 │       ├── uview-components/  examples/  skills-reference/
 │       └── AGENTS/           #     src/api · src/components · src/composables · src/utils
+├── token-templates/           # PC 设计 token 模板（初始化时复制到 docs/token-specs/）
+│   └── pc/
+│       ├── Light.tokens.json
+│       ├── antd-vue-theme.ts
+│       └── README.md
 └── docs/specs/                # ← 由 /init-specs（或 scripts/init-specs.sh）复制骨架+填充生成（不随 harness 分发）
+└── docs/token-specs/          # ← PC flavor 初始化时生成，色号/字号/主题 token 以此为准
 ```
 
 > 模版放在**可见的根目录 `spec-templates/`**（不藏在 `.claude/` 下），Codex / Cursor / 人都能直接看到用到；脚手架 `scripts/init-specs.sh` 也在可见的 `scripts/`，跨 agent 通用。
@@ -81,6 +87,7 @@ bash scripts/doctor.sh
 | 危险区拦截 | `docs/specs/dangerous-zones.txt` | guard hook 逐行子串匹配；缺失时用内置通用兜底 |
 | fast profile | `docs/specs/verify.cmd` | Stop hook 按顺序执行；通常是 typecheck/validate，一行一个命令 |
 | full profile | `docs/specs/verify.full.cmd` | 可选；人工/CI 执行 fast 后再执行真实存在的 lint/build/test/smoke |
+| PC 设计 token | `docs/token-specs/` | PC 页面色号、字号、主题覆盖以 Light.tokens.json / antd-vue-theme.ts 为准 |
 | box-sizing 校验 | uni-app 项目门禁 | 仅当 `src/pages.json` 存在时启用 |
 | 显式权限 | `docs/specs/13_AGENT_POLICY.md` | 统一使用 Allowed / Blocked / Ask First，避免把风险操作默认为已授权 |
 | 按需查阅 | `docs/specs/00_PROJECT_FACTS.md` + `INDEX.md` | agent 先读事实与权限边界，再按需 grep 其余 |
