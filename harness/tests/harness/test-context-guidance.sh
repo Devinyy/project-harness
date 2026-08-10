@@ -55,4 +55,22 @@ assert_contains "$pc_rule" "真实调用" "pc initialization derives patterns fr
 changelog=$(sed -n '1,100p' "$HARNESS_ROOT/CHANGELOG.md")
 assert_contains "$changelog" "Figma / 截图上下文路由" "changelog explains the new design-input mechanism"
 
+minimal_agents=$(sed -n '1,140p' "$HARNESS_ROOT/AGENTS.md")
+assert_contains "$minimal_agents" "docs/specs/00_PROJECT_FACTS.md" "minimal AGENTS context loads project facts"
+assert_contains "$minimal_agents" "docs/specs/11_DANGEROUS_AREAS.md" "minimal AGENTS context loads dangerous areas"
+assert_contains "$minimal_agents" "run-verification-profile.sh" "minimal AGENTS context routes verification"
+assert_contains "$minimal_agents" ".claude/commands/<name>.md" "minimal AGENTS context routes commands"
+assert_not_contains "$minimal_agents" '基座 `apps/micro-main` + 子应用' "minimal AGENTS context omits retired architecture guidance"
+
+minimal_claude=$(sed -n '1,100p' "$HARNESS_ROOT/CLAUDE.md")
+assert_contains "$minimal_claude" "AGENTS.md" "minimal CLAUDE context delegates to AGENTS"
+assert_contains "$minimal_claude" "/init-specs" "minimal CLAUDE context exposes initialization"
+assert_not_contains "$minimal_claude" "## 思维方式" "minimal CLAUDE context omits duplicate guidance"
+
+agents_line_count=$(wc -l < "$HARNESS_ROOT/AGENTS.md" | tr -d ' ')
+assert_eq "45" "$agents_line_count" "AGENTS has the minimal line budget"
+
+claude_line_count=$(wc -l < "$HARNESS_ROOT/CLAUDE.md" | tr -d ' ')
+assert_eq "18" "$claude_line_count" "CLAUDE has the minimal line budget"
+
 finish_tests
