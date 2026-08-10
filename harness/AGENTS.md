@@ -41,11 +41,11 @@ Specs 为 `active` 后，执行可能涉及授权边界的动作前先读 `docs/
 
 > Claude Code 用 slash command 一键触发（`.claude/commands/`）；Codex / Cursor / Windsurf 没有 slash command，但**遵循下面同一套步骤**。先读 `docs/specs/00_PROJECT_FACTS.md` 确认项目类型与命令。
 
-- **新建页面**（`/new-page`）：`head -40 docs/specs/02_ARCHITECTURE.md` → 搜同类页面作骨架（PC `apps/*/src/views/*.vue`；uni-app `src/pages/<模块>/<xxx>-page.vue`）→ 确认路由/数据来源/状态/权限 → **拆分预判**（页面=容器+子组件：多区块/重复结构/大列表项/弹窗各自成组件，业务逻辑抽 `useXxxPage` composable，避免巨型单文件，见 `05_COMPONENT_PATTERNS.md`「拆分原则」）→ Vue3 SFC + 对应 UI 库，覆盖 loading/empty/error → 数据走项目请求封装 → **uni-app 必须登记 `src/pages.json`** → 跑类型检查命令。
+- **新建页面**（`/new-page`）：`head -40 docs/specs/02_ARCHITECTURE.md` → 搜同类页面作骨架（PC `apps/*/src/views/*.vue`；uni-app `src/pages/<模块>/<xxx>-page.vue`）→ 有 Figma 链接或截图时先识别 Frame/node 与页面类型（列表 / 新建编辑 / 详情），只读同类型真实示例并提取视觉验收点 → 确认路由/数据来源/状态/权限 → **拆分预判**（页面=容器+子组件：多区块/重复结构/大列表项/弹窗各自成组件，业务逻辑抽 `useXxxPage` composable，避免巨型单文件，见 `05_COMPONENT_PATTERNS.md`「拆分原则」）→ Vue3 SFC + 当前版本已验证的 UI 组件，覆盖 loading/empty/error → 数据走项目请求封装 → **uni-app 必须登记 `src/pages.json`** → 跑类型检查命令；有设计输入时按项目基准/最小/宽屏视口做截图视觉验收。
 - **排障**（`/debug`）：分层（渲染/数据/接口/配置/构建）→ `grep` 收集证据（不 `cat` 全文）→ 涉及基座/公共先读 `11_DANGEROUS_AREAS.md` → 列 ≤3 个根因各附验证 → 最小改动修复 → 跑类型检查验证 → 列回归范围。连续 3 次失败则停止报告。
 - **重构**（`/refactor`）：先读 `11_DANGEROUS_AREAS.md` 确认是否危险区 → 读目标代码理解依赖 → 列计划（改哪些/每步/风险）→ 逐步改、每步跑类型检查 → `git diff --stat` 核对范围。不为"优雅"大改历史代码、不把局部需求上升为全局基础设施修改。
 - **代码审查**（`/review`）：定范围（给定文件或 `git diff --name-only HEAD~1`）→ 逐文件 `grep` 查：危险区影响、框架红线、重复造轮子、分层违规、组件粒度（巨型文件 >~500 行 / 未拆分多区块页面）、类型安全、响应式副作用、（uni-app）多端与 box-sizing → 输出风险等级 + 问题清单 + 待确认项。
-- **技术方案**（`/tech-solution`）：按需读 `02/03/07` 相关段落 → 搜现有实现列复用点 → 输出：需求理解 / 技术选型(为什么) / 文件清单 / 数据流 / 风险与应对 / 待确认项。
+- **技术方案**（`/tech-solution`）：按需读 `02/03/07` 相关段落 → 搜现有实现列复用点 → 有设计输入时记录 Figma/截图证据、页面类型与组件映射、视觉验收点 → 输出：需求理解 / 技术选型(为什么) / 文件清单 / 数据流 / 风险与应对 / 待确认项。
 
 每个流程的完整版见 `.claude/commands/<name>.md`（任意 agent 都可直接打开当 playbook 读）。
 

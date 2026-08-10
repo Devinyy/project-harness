@@ -1,0 +1,25 @@
+# PC 微前端 flavor 危险区模版（典型清单，按真实代码增删）。一行一个子串，# 注释；hooks 读取。
+apps/micro-main/src/main.ts
+apps/micro-main/src/App.vue
+apps/micro-main/src/bootstrap/
+apps/micro-main/src/permission
+apps/micro-main/src/micro/
+apps/micro-main/src/config/domain
+apps/micro-main/src/views/micro-app/
+apps/micro-main/src/router/
+apps/micro-main/src/store/modules/permission
+apps/micro-main/src/store/modules/user
+apps/micro-main/src/request/
+apps/micro-main/src/style/
+packages/http-client/
+packages/micro-bridge/
+packages/auth-session/
+packages/shared-types/
+packages/shared-utils/
+pnpm-workspace
+tsconfig.base
+vite.config
+vite-build
+eslint.config
+.prettierrc
+.env
