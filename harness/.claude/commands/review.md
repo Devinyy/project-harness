@@ -23,3 +23,5 @@
 ```
 
 审查对象：$ARGUMENTS
+
+审查结论按 [docs/harness/verification.md](../../docs/harness/verification.md) 区分失败、受阻和未验证；可复现问题交回原实现者修复，由本审查角色做增量复验，同一问题连续两轮仍失败才升级。

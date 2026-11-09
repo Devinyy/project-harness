@@ -1,6 +1,8 @@
 # docs/specs/INDEX.md（模版骨架 · PC 微前端）
 > 🧩 生成后删除本行，把 `<...>` 换成真实项目名。不预加载，按下表 head/grep 查阅。
 
+这是 PC 微前端的前端领域入口，只记录当前项目的实现事实。通用知识见 [docs/harness/knowledge.md](../../docs/harness/knowledge.md)，通用验收见 [docs/harness/verification.md](../../docs/harness/verification.md)；用户确认的目标和业务决策按知识契约放在项目约定的需求/决策资料中，不在这里伪造。
+
 本项目：`<项目名>`（PC 运营平台，Vue3 + micro-app + dcgj-ui + @platform/http-client）。
 
 | 文件 | 何时查 |
@@ -26,3 +28,5 @@
 | dangerous-zones.txt | 机器可读危险区（驱动 hooks）|
 
 纪律：head -40/grep -A 10，不 cat 全文；以真实代码为准，拿不准标 `// TODO: 待确认`。
+
+状态分离：`03_BUSINESS_DOMAIN.md` 区分目标与实现事实；`00_PROJECT_FACTS.md`、架构、API 和组件文档只写可取证的当前实现。`status: active` 需要人工复核，不等于用户业务验收；验收顺序和受阻/复验处理统一引用 [verification contract](../../docs/harness/verification.md)。

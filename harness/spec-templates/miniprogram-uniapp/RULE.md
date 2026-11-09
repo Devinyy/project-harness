@@ -2,6 +2,8 @@
 
 适用：uni-app + Vue 3（createSSRApp）+ uview-plus，多端 H5/微信小程序/App。具体值必须从当前仓库取证。
 
+本规则只补 uni-app 前端领域的**实现事实**取证方式，不定义用户目标或复制通用验收。先看根 [MAP.md](../../MAP.md)，再按 [知识契约](../../docs/harness/knowledge.md) 区分目标、实现、决策和证据；任务完成按 [通用验收契约](../../docs/harness/verification.md) 执行。
+
 ## 探索重点
 - package.json：scripts（dev:h5/dev:mp-weixin/dev:app、build:*、lint:type=vue-tsc、lint:ts/lint:css）、依赖（@dcloudio/uni-app、uview-plus、luch-request）、包管理器
 - src/pages.json（路由真相源+分包）、src/manifest.json（各平台 AppID/权限/SDK）
@@ -23,3 +25,5 @@
 - fast：从 package.json 取证 typecheck/lint:type 命令写入 `verify.cmd`；Vue 项目用 vue-tsc，不是 tsc。
 - full：记录真实存在的 lint、一个可用 build，以及平台 smoke 命令；只在项目确有 test 脚本时记录测试。
 - Stop hook 只运行 fast；人工/CI 用 `bash scripts/run-verification-profile.sh full`。不得因为模板示例而调用或生成 `pnpm test`。
+
+填充后保持 `status: draft`，由人工复核实现事实、需求引用和危险区，再改为 `active`；不要用 `active` 代替用户业务验收。

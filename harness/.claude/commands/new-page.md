@@ -17,4 +17,6 @@
 9. 运行 `docs/specs/00_PROJECT_FACTS.md` 中声明的类型检查命令
 10. 有设计输入时做视觉验收：按项目 specs 声明的基准/最小/宽屏视口截图，对照 Figma 检查区块顺序、尺寸间距、滚动归属、固定区和 loading/empty/error/disabled/展开/弹层等状态；记录仍无法从设计或 PRD 确认的差异。
 
+完成前按 [docs/harness/verification.md](../../docs/harness/verification.md) 区分用户目标、实现事实和验收结果；涉及新流程、权限、接口、公共能力或运行交互时安排独立 QA，失败交回原实现者并由原 QA 增量复验。
+
 需求描述：$ARGUMENTS

@@ -1,6 +1,7 @@
 # AGENTS.md
 
 所有 AI 编码 agent 的共享入口；Claude Code 用户同时阅读 `CLAUDE.md`。
+总导航：[MAP.md](./MAP.md)；通用知识与验收契约：[docs/harness/knowledge.md](./docs/harness/knowledge.md)、[docs/harness/verification.md](./docs/harness/verification.md)。
 
 ## Specs 状态
 
@@ -30,3 +31,6 @@ Specs 为 active 时，任何可能涉及授权边界的动作前先读 `docs/sp
 | 危险区 | `docs/specs/11_DANGEROUS_AREAS.md` 与 `docs/specs/dangerous-zones.txt` |
 | 验证 | `bash scripts/run-verification-profile.sh fast`；需要时用 `full` |
 | UI | `docs/specs/06_UI_COMPONENT_GUIDE.md`；有 Figma 链接或截图时参照相关 playbook 完成列表 / 新建编辑 / 详情的视觉验收 |
+| 可复用资料 | `project-templates/README.md`、`project-templates/MANIFEST.tsv`；显式生成用 `bash scripts/init-project-knowledge.sh ...` |
+
+通用验收按 `docs/harness/verification.md` 执行；任务专项步骤仍以 `.claude/commands/<name>.md` 为准。

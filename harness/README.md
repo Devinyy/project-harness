@@ -1,8 +1,10 @@
 # Project Harness（通用 · specs 外置 + 自动生成）
 
-**版本：v2.9**　·　完整变更见 [`CHANGELOG.md`](./CHANGELOG.md)
+**Harness 2.0 开发版（基于 v2.9）**　·　既有发行版本仍为 **v2.9**　·　完整变更见 [`CHANGELOG.md`](./CHANGELOG.md)
 
 把项目规格（specs）转化为可执行的 AI agent 约束（harness）。支持 Claude Code / Codex / Cursor / Windsurf。
+
+从问题出发的总导航见 [`MAP.md`](./MAP.md)；通用知识与验收规则分别见 [`docs/harness/knowledge.md`](./docs/harness/knowledge.md) 和 [`docs/harness/verification.md`](./docs/harness/verification.md)。本仓库当前为 Harness 2.0 开发版，基于 v2.9 机制增加导航与知识契约。
 
 **核心理念：harness 不内置任何项目的真实 specs，只带「生成规则」（`spec-templates/`）。**
 - specs 由每个项目在自己根目录的 `docs/specs/` 维护。
@@ -19,6 +21,10 @@
 你的项目根/
 ├── CLAUDE.md                 # 通用：角色 + 原则 + "先读 docs/specs/，无则 /init-specs"
 ├── AGENTS.md                 # 跨 agent 共享指令
+├── MAP.md                    # 总导航：需求、架构、开发、证据、验收、发布入口
+├── docs/harness/              # 通用知识与验收契约（不含业务项目事实）
+│   ├── knowledge.md
+│   └── verification.md
 ├── .cursor/rules/ .windsurfrules
 ├── .claude/                   # Claude Code 专属
 │   ├── settings.json
@@ -30,7 +36,8 @@
 │   ├── init-specs.sh          # 👈 跨 agent 脚手架：复制骨架→docs/specs/ + 放置 AGENTS
 │   ├── run-verification-profile.sh # fast/full 执行与 baseline snapshot/compare
 │   ├── record-harness-event.sh # 匿名结构化审计事件，写入 git 私有目录
-│   └── record-permission-outcome.sh # PostToolUse 可观察授权模式审计
+│   ├── record-permission-outcome.sh # PostToolUse 可观察授权模式审计
+│   └── init-project-knowledge.sh # 按需生成 docs/specs/ 之外的资料 draft
 ├── spec-templates/            # 👈 可见、agent 中立的模版骨架（生成 docs/specs 的全部依赖，随 harness 走）
 │   ├── SCHEMA.md              #   通用规则：要哪些文件、各写什么、dangerous-zones.txt 格式
 │   ├── pc-microapp/           #   PC 微前端 flavor —— 全套骨架（提炼自 dc-platform）
@@ -43,6 +50,9 @@
 │       ├── 00_PROJECT_FACTS.md … 13_AGENT_POLICY.md  INDEX.md  dangerous-zones.txt
 │       ├── uview-components/  examples/  skills-reference/
 │       └── AGENTS/           #     src/api · src/components · src/composables · src/utils
+├── project-templates/         # 👈 需求/实现/设计/证据/经验资料模板（显式生成 draft）
+│   ├── MANIFEST.tsv           #     三列 Tab 清单：domain / path / kind
+│   └── README.md              #     生成、状态和引用链规则
 ├── token-templates/           # PC 设计 token 模板（初始化时复制到 docs/token-specs/）
 │   └── pc/
 │       ├── Light.tokens.json
@@ -52,6 +62,8 @@
 └── docs/token-specs/          # ← PC flavor 初始化时生成，色号/字号/主题 token 以此为准
 ```
 
+资料模板另见 `project-templates/`：它按需提供需求、实现、设计、环境证据、验收和可选经验/badcase 的 draft 骨架，不复制业务事实。机器清单为 `project-templates/MANIFEST.tsv`；模板与目标生成物的规则见 `project-templates/README.md`。
+
 > 模版放在**可见的根目录 `spec-templates/`**（不藏在 `.claude/` 下），Codex / Cursor / 人都能直接看到用到；脚手架 `scripts/init-specs.sh` 也在可见的 `scripts/`，跨 agent 通用。
 
 > **模版骨架 = 精炼版（A）**：保留真实项目的章节结构，正文挖空为 `<填写：…>` 占位符 + flavor 固定常量（栈/危险区/约定）。丢一个 harness 文件夹即自带全部生成依赖，无外部依赖。
@@ -59,7 +71,7 @@
 ## 接入一个项目
 
 ```bash
-# 1. 把本 harness 的内容放到项目根（.claude/.codex/CLAUDE.md/AGENTS.md/scripts/.cursor/.windsurfrules/spec-templates）
+# 1. 把本 harness 的内容放到项目根（MAP.md/docs/harness/.claude/.codex/CLAUDE.md/AGENTS.md/scripts/.cursor/.windsurfrules/spec-templates）
 # 2. 加执行权限
 chmod +x .claude/hooks/*.sh .codex/hooks/*.sh scripts/*.sh
 # 3. 环境检查（项目模式会提示 docs/specs 是否就绪）
@@ -78,7 +90,24 @@ bash scripts/doctor.sh
 > ⚠️ **`scripts/init-specs.sh` 只做第①步（复制骨架），不填充内容**——产物全是 `<填写：…>` 占位符。只有 Claude Code 的 `/init-specs` 会接着自动做第②步探索+填充。其它 agent 需自己驱动填充。
 > 生成物 frontmatter 标 `status: draft`，**人工复核后改 `active`**；复核可用 `bash scripts/doctor.sh --strict` 闸门（占位符/草稿未清则 fail）。
 
-> 已有现成 specs 的项目（如 dc-platform / ecm-welfare）直接把整理好的 `docs/specs/` 放进项目根即可——脚手架与 `/init-specs` 检测到 `00_PROJECT_FACTS.md` 存在会自动跳过。
+> 分发 Harness 时必须同时包含 `MAP.md` 与 `docs/harness/`；它们是通用导航/契约，不承载真实业务 specs。已有初始化命令与 `docs/specs/` 路径保持不变。
+
+> 初始化按三态处理：`missing` 执行脚手架；`draft` 时脚本不覆盖并退出，Claude `/init-specs` 继续填充；`active` 时脚本与 `/init-specs` 均跳过。仅存在空的 `docs/specs/` 目录不算已初始化；已有现成 specs 的项目可直接放入项目根后按状态复核。
+
+### 按需生成项目资料
+
+显式调用 `scripts/init-project-knowledge.sh` 可独立生成资料 domain；它写入 `docs/specs/` 之外的 draft 文件，保留已有资料，不强制迁移目录：
+
+```bash
+bash scripts/init-project-knowledge.sh --domain harness
+bash scripts/init-project-knowledge.sh --domain requirements --module orders
+bash scripts/init-project-knowledge.sh --domain design
+bash scripts/init-project-knowledge.sh --domain docs
+bash scripts/init-project-knowledge.sh --domain experience --case keyboard-focus
+bash scripts/init-project-knowledge.sh --domain all --dry-run
+```
+
+`--module` 和 `--case` 只在显式提供安全标识时实例化；不带参数只展示用法，`--dry-run` 不创建文件。既有前端 specs、token、Hook 和公共验收规则仍各自维护唯一来源，资料模板只建立需求 ID → 模块 → 实现 → 用例 → 偏差 → 证据的引用链。
 
 ## specs 驱动机制
 
@@ -154,4 +183,4 @@ bash scripts/run-verification-profile.sh full --compare "$BASELINE_FILE"
 
 ## Changelog
 
-完整变更记录见 [`CHANGELOG.md`](./CHANGELOG.md)。当前版本 **v2.9**（在 v2.8.1 基础上：`02_ARCHITECTURE` 补 MVVM 通用分层基线、`05_COMPONENT_PATTERNS` 把拆分原则写成可判定规则、新增巨型文件门禁 `check-large-file.sh`、`/new-page`+`/review` 加拆分预判与组件粒度检查）。
+完整变更记录见 [`CHANGELOG.md`](./CHANGELOG.md)。当前为 **Harness 2.0 开发版（基于 v2.9）**；既有发行版本仍为 **v2.9**，历史基线改动仍见变更记录。

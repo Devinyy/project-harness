@@ -1,0 +1,29 @@
+%% Source: MAP.md, AGENTS.md, docs/harness/verification.md
+%% Updated: 2026-11-09; conditional project paths are intentionally not asserted as present.
+flowchart TD
+    start["从问题开始\nMAP.md"]
+
+    start --> goal["需求/已确认目标"]
+    start --> system["全系统/跨端架构\n已有资料或按需 docs/architecture/"]
+    start --> adr["架构决策 / ADR\n已有资料或按需 docs/decisions/"]
+    start --> frontend["前端开发入口\ndocs/specs/INDEX.md + 00_PROJECT_FACTS.md"]
+    start --> api["API 联调 / 环境证据\n07_API_CONTRACTS.md + 按需 evidence/"]
+    start --> qa["验收 / 偏差复验\ndocs/harness/verification.md"]
+    start --> release["发布 / 回滚\n按需 release/ 与 evidence/"]
+    start --> templates["资料模板\nproject-templates/README.md + MANIFEST.tsv"]
+
+    goal -. "按需建立；无确认保持 pending" .-> requirements["requirements domain\n仅显式生成 draft"]
+    templates --> requirements
+    templates --> design["design domain\n引用既有 token/UI 规则"]
+    templates --> docs["docs domain\n只记录真实证据"]
+    templates --> experience["experience / badcase\n可选，需真实来源"]
+
+    frontend --> state{ "docs/specs 状态" }
+    state -->|missing| init_specs["bash scripts/init-specs.sh\n或 Claude /init-specs"]
+    state -->|draft| fill["继续填充\n不得当作事实"]
+    state -->|active| facts["先读 facts + INDEX\n按需查阅"]
+
+    qa --> independent["按风险决定独立 QA\n原实现者之外角色"]
+    independent --> result["pass / fail / blocked / unverified\n保留证据与未覆盖范围"]
+    result --> fix["失败交原实现者修复\n原 QA 增量复验"]
+    fix --> closed["关闭只追加修复/复验证据\n不删除历史"]

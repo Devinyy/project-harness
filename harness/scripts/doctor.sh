@@ -42,12 +42,45 @@ if [ "$MODE" = "self" ]; then
   for c in bash jq git; do have "$c" && echo "✅ $c" || warn "缺少 $c（hooks 运行需要）"; done
 
   # 机制层
-  for f in CLAUDE.md AGENTS.md README.md .claude/settings.json .codex/config.toml scripts/doctor.sh; do
+  for f in CLAUDE.md AGENTS.md README.md MAP.md docs/harness/knowledge.md docs/harness/verification.md .claude/settings.json .codex/config.toml scripts/doctor.sh scripts/init-project-knowledge.sh project-templates/MANIFEST.tsv project-templates/README.md; do
     [ -f "$f" ] && echo "✅ $f" || err "缺少 $f"
   done
-  for d in .claude/commands .claude/hooks .codex/hooks spec-templates; do
+  for d in .claude/commands .claude/hooks .codex/hooks spec-templates project-templates; do
     [ -d "$d" ] && echo "✅ $d/" || err "缺少 $d/"
   done
+  if [ -f project-templates/MANIFEST.tsv ]; then
+    manifest_errors=$(awk -F '\t' '
+      /^[[:space:]]*#/ || NF == 0 { next }
+      NF != 3 { bad = 1; next }
+      $1 !~ /^(harness|requirements|design|docs|experience)$/ { bad = 1; next }
+      $3 !~ /^(static|module|case)$/ { bad = 1; next }
+      $2 == "" { bad = 1; next }
+      $3 == "static" && ($2 == "requirements/modules/_module.md" || $2 == "badcase/_case.md") { bad = 1; next }
+      $3 == "module" && !($1 == "requirements" && $2 == "requirements/modules/_module.md") { bad = 1; next }
+      $3 == "case" && !($1 == "experience" && $2 == "badcase/_case.md") { bad = 1; next }
+      END { print bad + 0 }
+    ' project-templates/MANIFEST.tsv)
+    if [ "$manifest_errors" -eq 0 ]; then
+      echo "✅ project-templates/MANIFEST.tsv（三列清单）"
+    else
+      err "project-templates/MANIFEST.tsv 格式错误（需 domain/path/kind 三列）"
+    fi
+    while IFS=$'\t' read -r manifest_domain manifest_path manifest_kind; do
+      case "$manifest_domain" in
+        ''|\#*) continue ;;
+      esac
+      case "$manifest_kind" in
+        module) expected_source="requirements/modules/_module.md" ;;
+        case) expected_source="badcase/_case.md" ;;
+        *) expected_source="$manifest_path" ;;
+      esac
+      if [ ! -f "project-templates/$expected_source" ]; then
+        err "模板清单源文件缺失：project-templates/$expected_source"
+      elif [ -L "project-templates/$expected_source" ]; then
+        err "模板清单源文件不能是符号链接：project-templates/$expected_source"
+      fi
+    done < project-templates/MANIFEST.tsv
+  fi
   # 命令与 hooks
   for f in init-specs new-page debug refactor review tech-solution; do
     [ -f ".claude/commands/$f.md" ] && echo "✅ command: /$f" || err "缺少 .claude/commands/$f.md"

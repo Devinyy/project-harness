@@ -9,6 +9,16 @@ status: template
 purpose: 常见任务的标准步骤
 ---
 
+本文件只补 PC flavor 的差异和实现取证；通用知识使用 [knowledge contract](../../docs/harness/knowledge.md)，通用验收（含独立 QA、受阻和增量复验）使用 [verification contract](../../docs/harness/verification.md)，不在此复制正文。
+
+| 任务 | 专项流程来源 | 需要补的 flavor 证据 |
+| --- | --- | --- |
+| 新增页面 | [.claude/commands/new-page.md](../../.claude/commands/new-page.md) | 子应用、路由、组件和页面类型 |
+| 修复 bug | [.claude/commands/debug.md](../../.claude/commands/debug.md) | 根因、影响面和回归命令 |
+| 重构 | [.claude/commands/refactor.md](../../.claude/commands/refactor.md) | 依赖方向、行为不变证据 |
+| 接口接入 | [SCHEMA.md](../../spec-templates/SCHEMA.md) 与项目 API 约定 | DTO、错误码和请求封装 |
+| 新增组件 | [.claude/commands/new-page.md](../../.claude/commands/new-page.md) | 已验证组件导出、调用位置和拆分边界 |
+
 ## 新增页面
 <填写：依据真实代码/配置提炼>
 
@@ -23,4 +33,6 @@ purpose: 常见任务的标准步骤
 
 ## 新增组件
 <填写：依据真实代码/配置提炼>
+
+每项任务完成后按 [verification contract](../../docs/harness/verification.md) 留下实现状态、命令/环境证据和未验证范围；涉及权限、公共能力、接口或运行交互时安排独立 QA。
 

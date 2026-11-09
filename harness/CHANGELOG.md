@@ -2,6 +2,15 @@
 
 本文件记录 Project Harness 的版本变更。遵循「机制改动写清楚为什么」。
 
+## Harness 2.0 开发版（基于 v2.9）
+
+本节记录基于 v2.9 的 Harness 2.0 开发版变更；既有 v2.9 历史保持不变。
+
+- **新增总 MAP 与通用契约**：`MAP.md` 连接需求/目标、架构与 ADR、前端开发、API/环境证据、验收和发布/回滚入口；`docs/harness/knowledge.md` 统一目标、实现、规范、决策和证据记录，`docs/harness/verification.md` 统一独立 QA、受阻、复验和升级边界。*为什么*：让各 agent 共享一份导航和验收语义，避免复制规则或把业务目标当成实现事实。
+- **保留前端 specs 与初始化机制**：`docs/specs/` 路径、`missing / draft / active` 三态、Hook 协议和 `scripts/init-specs.sh` 保持不变；两套 flavor 只补前端差异并引用通用契约。*为什么*：兼容现有接入项目，同时让需求草稿与真实实现证据分离。
+- **分发边界明确**：Harness 包必须包含 `MAP.md` 与 `docs/harness/`，不携带真实项目 specs 或空业务资料；初始化后仍由目标项目维护自己的 `docs/specs/`。
+- **补全可复用资料模板**：新增 `project-templates/`、三列 `MANIFEST.tsv`、五个 domain、按需生成的 draft 骨架、需求到证据的稳定引用链，以及 `docs/harness/diagrams/` 的当前结构/导航图。显式初始化不覆盖既有资料、不生成空业务事实；前端 specs、token、Hook、三态状态和公共验收规则保持原路径与来源。
+
 ## Unreleased — Figma / 截图上下文路由
 
 - **按页面类型路由真实示例**：PC 模板约定先识别列表、新建/编辑或详情，再只加载同类型示例；示例目录使用 OVERVIEW 做特征路由，并明确示例不是字段、尺寸或操作的事实来源。*为什么*：一次加载跨页面业务示例会引入无关上下文，降低 Figma Frame 与产出结构的匹配度。

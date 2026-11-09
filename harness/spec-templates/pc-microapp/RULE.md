@@ -3,6 +3,8 @@
 适用：Vue 3 + `@micro-zoe/micro-app` 微前端 monorepo + dcgj-ui + `@platform/http-client`。
 具体值（端口/子应用名/key）必须从当前仓库取证，本规则给结构与典型形态。
 
+本规则只补 PC 前端领域的**实现事实**取证方式，不定义用户目标或复制通用验收。先看根 [MAP.md](../../MAP.md)，再按 [知识契约](../../docs/harness/knowledge.md) 区分目标、实现、决策和证据；任务完成按 [通用验收契约](../../docs/harness/verification.md) 执行。
+
 ## 探索重点
 - `pnpm-workspace.yaml` / `apps/*` / `packages/*`：基座（通常 `apps/micro-main`）与子应用清单、端口（各 `vite.config.ts` 的 server.port）
 - `apps/micro-main/src/`：main.ts、App.vue、bootstrap/、micro/(registry/runtime/start)、router/、permission*、store/modules/{permission,user}、request/、config/domain、style/
@@ -25,3 +27,5 @@
 - fast：从 package.json 取证 typecheck/validate 命令写入 `verify.cmd`；Vue 项目用 vue-tsc，不是 tsc。
 - full：在 `verify.full.cmd` 中记录真实存在的 lint、build 和 test/test:* 脚本；没有对应脚本就写注释说明，不编造。
 - Stop hook 只运行 fast；人工/CI 用 `bash scripts/run-verification-profile.sh full`。
+
+填充后保持 `status: draft`，由人工复核实现事实、需求引用和危险区，再改为 `active`；不要用 `active` 代替用户业务验收。
