@@ -106,6 +106,7 @@ fi
 
 invalid_root="$FIXTURE_ROOT/invalid"
 mkdir -p "$invalid_root"
+invalid_snapshot_before=$(cd "$invalid_root" && find . -print | sed '1d' | sort)
 invalid_output=$(run_init "$invalid_root" --domain requirements --module ../escape 2>&1)
 invalid_exit=$?
 if [ "$invalid_exit" -ne 0 ]; then
@@ -114,7 +115,9 @@ else
   fail "module path traversal is rejected"
 fi
 assert_contains "$invalid_output" "非法" "invalid module reports a useful error"
-assert_no_file "$FIXTURE_ROOT" "escape.md" "rejected module cannot write outside target"
+assert_no_file "$invalid_root" "requirements/escape.md" "rejected module cannot write through a normalized path"
+invalid_snapshot_after=$(cd "$invalid_root" && find . -print | sed '1d' | sort)
+assert_eq "$invalid_snapshot_before" "$invalid_snapshot_after" "rejected module writes no target files"
 
 missing_value_output=$(run_init "$invalid_root" --domain requirements --module 2>&1)
 missing_value_exit=$?
@@ -304,6 +307,8 @@ printf '%s\n' '# User root navigation' 'keep this line' > "$target_root/MAP.md"
 printf '%s\n' '<!-- init-project-knowledge generated entries -->' '- [legacy-harness](./harness/MAP.md)' >> "$target_root/MAP.md"
 mkdir -p "$target_root/harness"
 printf '%s\n' '# User harness navigation' 'keep this harness line' > "$target_root/harness/MAP.md"
+harness_map_before=$(cat "$target_root/harness/MAP.md")
+assert_not_contains "$harness_map_before" "adr.md" "pre-existing harness MAP does not fake generated entries"
 run_init "$target_root" --domain harness >/dev/null 2>&1
 harness_exit=$?
 if [ "$harness_exit" -eq 0 ]; then
@@ -316,10 +321,22 @@ assert_file "$target_root" "PROJECT_MAP.md" "project map is generated separately
 assert_contains "$(cat "$target_root/PROJECT_MAP.md")" "项目资料登记" "project map has an independent title"
 assert_contains "$(cat "$target_root/PROJECT_MAP.md")" "legacy-harness" "legacy root MAP entries migrate to project map"
 assert_contains "$(cat "$target_root/MAP.md")" "legacy-harness" "legacy root MAP remains unchanged"
-assert_file "$target_root" "harness/MAP.md" "harness MAP is generated"
 assert_contains "$(cat "$target_root/harness/MAP.md")" "keep this harness line" "existing domain MAP text is preserved"
 assert_contains "$(cat "$target_root/harness/MAP.md")" "adr.md" "custom harness MAP registers generated files"
 assert_contains "$(cat "$target_root/harness/MAP.md")" "scenes/MAP.md" "custom harness MAP registers generated submaps"
+
+fresh_harness_root="$FIXTURE_ROOT/fresh-harness"
+mkdir -p "$fresh_harness_root"
+assert_no_file "$fresh_harness_root" "harness/MAP.md" "fresh harness target starts without a domain MAP"
+run_init "$fresh_harness_root" --domain harness >/dev/null 2>&1
+fresh_harness_exit=$?
+assert_eq "0" "$fresh_harness_exit" "fresh harness domain generation succeeds"
+assert_file "$fresh_harness_root" "harness/MAP.md" "fresh harness target creates a domain MAP"
+fresh_harness_status=$(sed -nE 's/^status:[[:space:]]*([^[:space:]]+).*$/\1/p' "$fresh_harness_root/harness/MAP.md" | head -1)
+assert_eq "draft" "$fresh_harness_status" "fresh harness MAP starts as draft"
+assert_contains "$(cat "$fresh_harness_root/harness/MAP.md")" "adr.md" "fresh harness MAP registers generated files"
+assert_contains "$(cat "$fresh_harness_root/harness/MAP.md")" "scenes/MAP.md" "fresh harness MAP registers generated scene MAP"
+assert_contains "$(cat "$fresh_harness_root/harness/MAP.md")" "diagrams/MAP.md" "fresh harness MAP registers generated diagram MAP"
 
 unsafe_legacy_root="$FIXTURE_ROOT/unsafe-legacy"
 mkdir -p "$unsafe_legacy_root"

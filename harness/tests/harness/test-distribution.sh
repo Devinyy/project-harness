@@ -452,6 +452,134 @@ assert_contains "$(cat "$upgrade_root/custom-domain/README.md")" "user domain" "
 assert_contains "$(cat "$upgrade_root/custom-domain/docs/specs/00_PROJECT_FACTS.md")" "user fact" "upgrade preserves user specs"
 assert_contains "$(cat "$upgrade_root/docs/token-specs/user.json")" '"user":true' "upgrade preserves user tokens"
 
+# Upgrade ordering fixture: an old project MAP may contain user-owned local
+# registrations that are not part of the public Harness domains.  The staged
+# package must migrate those marker links while the old MAP is still present;
+# only after that verification may the static package MAP replace it.
+ordered_upgrade_root="$FIXTURE_ROOT/upgrade-order"
+ordered_upgrade_backup="$FIXTURE_ROOT/upgrade-order-backup"
+wrong_order_root="$FIXTURE_ROOT/upgrade-order-wrong"
+mkdir -p "$ordered_upgrade_root/custom-domain" \
+  "$ordered_upgrade_root/docs/specs" \
+  "$ordered_upgrade_root/docs/token-specs" \
+  "$ordered_upgrade_backup" \
+  "$wrong_order_root"
+# macOS exposes /var as a symlink; pass the physical target path because the
+# generator intentionally rejects any target path containing symlink components.
+ordered_upgrade_root=$(cd "$ordered_upgrade_root" && pwd -P)
+ordered_upgrade_backup=$(cd "$ordered_upgrade_backup" && pwd -P)
+printf '%s\n' \
+  '# Legacy project navigation' \
+  '' \
+  'This user-owned navigation is replaced only after its generated links migrate.' \
+  '' \
+  '<!-- init-project-knowledge generated entries -->' \
+  '- [Custom domain](./custom-domain/MAP.md)' > "$ordered_upgrade_root/MAP.md"
+printf '%s\n' \
+  '---' \
+  'status: draft' \
+  '---' \
+  '' \
+  '# Existing project registration' \
+  '' \
+  'Keep this user-owned PROJECT_MAP paragraph during the upgrade.' > \
+  "$ordered_upgrade_root/PROJECT_MAP.md"
+printf '%s\n' '# User custom domain navigation' > "$ordered_upgrade_root/custom-domain/MAP.md"
+printf '%s\n' '# User custom domain facts' > "$ordered_upgrade_root/custom-domain/README.md"
+printf '%s\n' '# User fact' > "$ordered_upgrade_root/docs/specs/00_PROJECT_FACTS.md"
+printf '%s\n' '{"user":true}' > "$ordered_upgrade_root/docs/token-specs/user.json"
+wrong_order_root=$(cd "$wrong_order_root" && pwd -P)
+cp -R "$ordered_upgrade_root/." "$wrong_order_root/"
+
+# Control fixture: replacing the old MAP first destroys the only legacy
+# marker source, so the same staged generator cannot migrate the custom link.
+assert_contains "$(cat "$wrong_order_root/MAP.md")" \
+  "./custom-domain/MAP.md" "wrong-order fixture starts with the legacy custom link"
+cp "$package_root/MAP.md" "$wrong_order_root/MAP.md"
+assert_not_contains "$(cat "$wrong_order_root/MAP.md")" \
+  "./custom-domain/MAP.md" "wrong-order fixture loses the marker after early overwrite"
+bash "$package_root/scripts/init-project-knowledge.sh" \
+  --target "$wrong_order_root" --domain requirements >/dev/null 2>&1
+wrong_order_exit=$?
+assert_eq "0" "$wrong_order_exit" \
+  "wrong-order control still generates the requested domain"
+assert_not_contains "$(cat "$wrong_order_root/PROJECT_MAP.md")" \
+  "./custom-domain/MAP.md" \
+  "wrong-order control proves early overwrite loses custom registration"
+assert_file "$wrong_order_root" "requirements/MAP.md" \
+  "wrong-order control generates requirements after early overwrite"
+
+# The backup captures the old user MAP before any package asset is copied.
+cp "$ordered_upgrade_root/MAP.md" "$ordered_upgrade_backup/MAP.md"
+assert_contains "$(cat "$ordered_upgrade_backup/MAP.md")" \
+  "./custom-domain/MAP.md" "upgrade backs up the old MAP before migration"
+
+ordered_migration_log=$(bash "$package_root/scripts/init-project-knowledge.sh" \
+  --target "$ordered_upgrade_root" --domain requirements 2>&1)
+ordered_migration_exit=$?
+assert_eq "0" "$ordered_migration_exit" \
+  "staged package migrates old MAP before static overwrite"
+ordered_project_map=$(cat "$ordered_upgrade_root/PROJECT_MAP.md")
+assert_contains "$ordered_project_map" \
+  "Keep this user-owned PROJECT_MAP paragraph" \
+  "ordered upgrade preserves existing PROJECT_MAP text"
+assert_contains "$ordered_project_map" \
+  "./custom-domain/MAP.md" \
+  "ordered upgrade migrates the non-standard custom domain link"
+assert_eq "1" \
+  "$(grep -F -c '](./custom-domain/MAP.md)' "$ordered_upgrade_root/PROJECT_MAP.md" 2>/dev/null || true)" \
+  "ordered upgrade registers the custom domain exactly once"
+assert_file "$ordered_upgrade_root" "requirements/MAP.md" \
+  "ordered upgrade generates only the requested existing domain"
+assert_no_path "$ordered_upgrade_root" "harness/MAP.md" \
+  "ordered upgrade does not generate the harness domain"
+assert_no_path "$ordered_upgrade_root" "design/MAP.md" \
+  "ordered upgrade does not generate the design domain"
+assert_no_path "$ordered_upgrade_root" "experience/MAP.md" \
+  "ordered upgrade does not generate the experience domain"
+
+# Now apply the package's static/tool assets, deliberately excluding all
+# project-owned state (PROJECT_MAP, custom domains, specs, and tokens).
+for entry in .claude/ .codex/ .cursor/ scripts/ tests/ spec-templates/ token-templates/ project-templates/ docs/harness/ .windsurfrules AGENTS.md CLAUDE.md MAP.md README.md CHANGELOG.md VERSION LICENSE .gitattributes distribution/; do
+  source="$package_root/$entry"
+  target="$ordered_upgrade_root/$entry"
+  if [ -d "$source" ]; then
+    mkdir -p "$target"
+    cp -R "$source/." "$target/"
+  else
+    mkdir -p "$(dirname "$target")"
+    cp "$source" "$target"
+  fi
+done
+if cmp -s "$package_root/MAP.md" "$ordered_upgrade_root/MAP.md"; then
+  pass "ordered upgrade replaces the old MAP with the static package MAP"
+else
+  fail "ordered upgrade replaces the old MAP with the static package MAP"
+fi
+assert_contains "$(cat "$ordered_upgrade_backup/MAP.md")" \
+  "./custom-domain/MAP.md" "ordered upgrade backup retains the legacy custom link"
+assert_contains "$(cat "$ordered_upgrade_root/custom-domain/MAP.md")" \
+  "User custom domain navigation" "ordered upgrade preserves custom domain files"
+assert_contains "$(cat "$ordered_upgrade_root/custom-domain/README.md")" \
+  "User custom domain facts" "ordered upgrade preserves custom domain content"
+assert_contains "$(cat "$ordered_upgrade_root/docs/specs/00_PROJECT_FACTS.md")" \
+  "User fact" "ordered upgrade preserves user specs"
+assert_contains "$(cat "$ordered_upgrade_root/docs/token-specs/user.json")" \
+  '"user":true' "ordered upgrade preserves user tokens"
+
+# Re-running the staged generator after the static MAP replacement must remain
+# idempotent: the migrated custom registration is not duplicated.
+ordered_repeat_log=$(bash "$ordered_upgrade_root/scripts/init-project-knowledge.sh" \
+  --target "$ordered_upgrade_root" --domain requirements 2>&1)
+ordered_repeat_exit=$?
+assert_eq "0" "$ordered_repeat_exit" \
+  "ordered upgrade can repeat after static assets are installed"
+assert_eq "1" \
+  "$(grep -F -c '](./custom-domain/MAP.md)' "$ordered_upgrade_root/PROJECT_MAP.md" 2>/dev/null || true)" \
+  "ordered upgrade repeat does not duplicate the custom registration"
+assert_not_contains "$ordered_repeat_log" "旧 MAP 迁移候选" \
+  "ordered upgrade repeat does not require the overwritten legacy MAP"
+
 # The package test intentionally invokes focused commands above; it must not
 # recurse through tests/harness/run.sh while validating the unpacked package.
 if grep -Fq 'tests/harness/run.sh' "$PACKAGE_SCRIPT" 2>/dev/null; then

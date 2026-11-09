@@ -78,12 +78,29 @@
 bash scripts/package-harness.sh --output DIR
 ```
 
-构建产物为 `project-harness-2.0.0.tar.gz` 及对应 `.sha256`；构建允许使用系统 Python 3 标准库，安装和运行 Harness 不新增业务项目依赖。升级前先对照 `distribution/MANIFEST.txt` 和归档清单，备份并保留目标项目根 `PROJECT_MAP.md`、已生成领域资料、`docs/specs/`、`docs/token-specs/` 与自定义入口；不得盲目覆盖用户内容。长期效率、维护收益和实际填写率需要接入项目试点验证，不作为 2.0.0 归档已证明的业务结果。
+构建产物为 `project-harness-2.0.0.tar.gz` 及对应 `.sha256`；构建允许使用系统 Python 3 标准库，安装和运行 Harness 不新增业务项目依赖。升级前先对照 `distribution/MANIFEST.txt` 和归档清单，备份并保留目标项目根 `PROJECT_MAP.md`、已生成领域资料、`docs/specs/`、`docs/token-specs/` 与自定义入口；升级顺序必须先在源码树外 staging 解包并完成旧 MAP 登记迁移，再覆盖静态 MAP 和工具资产，不得盲目覆盖用户内容。长期效率、维护收益和实际填写率需要接入项目试点验证，不作为 2.0.0 归档已证明的业务结果。
+
+### 升级已有接入项目
+
+已有项目必须先迁移旧根 `MAP.md` 的生成登记，再覆盖静态 MAP 和 Harness 工具资产。新包先解压到源码树外的 staging 目录；备份 `PROJECT_MAP.md`、旧 `MAP.md`、已生成领域、`docs/specs/`、`docs/token-specs/` 和自定义入口。旧 `MAP.md` 仍在项目根时，按旧项目实际已经生成的 domain 分别调用 staging 中的新生成器（下面以 `requirements` 为例）：
+
+```bash
+# 新包位于项目源码树之外；staging 也必须在源码树之外
+mkdir -p /tmp/project-harness-2.0.0-staging
+tar -xzf project-harness-2.0.0.tar.gz -C /tmp/project-harness-2.0.0-staging
+
+# 旧 MAP.md 尚未覆盖时，先迁移旧项目实际已有的 domain
+project_target=$(cd /path/to/project && pwd -P)
+bash /tmp/project-harness-2.0.0-staging/project-harness-2.0.0/scripts/init-project-knowledge.sh \
+  --target "$project_target" --domain requirements
+```
+
+对旧项目已经存在的其他 domain 重复调用对应 `--domain`（不要为补齐结构使用 `--domain all`，也不要凭空生成未使用的 domain）；需要模块或案例时只带上旧项目实际存在且已核对的 `--module`/`--case`。核对 `PROJECT_MAP.md` 已收集旧 MAP 标记块中的本地条目并去重后，才用 staging 归档覆盖静态 `MAP.md`、脚本和其他允许替换的工具资产；已有自定义入口差异逐项合并，不盲目覆盖。迁移只保留登记，不删除旧 MAP 正文或用户资料。
 
 ## 接入一个项目
 
 ```bash
-# 1. 使用分发归档中的清单资产放到项目根（保留用户 PROJECT_MAP.md、领域资料、specs/token 与自定义入口）
+# 1. 新接入直接使用分发归档中的清单资产；升级已有项目必须先按上方“升级已有接入项目”迁移旧 MAP，再覆盖工具资产（保留用户 PROJECT_MAP.md、领域资料、specs/token 与自定义入口）
 # 2. 加执行权限
 chmod +x .claude/hooks/*.sh .codex/hooks/*.sh scripts/*.sh
 # 3. 环境检查（项目模式会提示 docs/specs 是否就绪）
@@ -119,7 +136,7 @@ bash scripts/init-project-knowledge.sh --domain experience --case keyboard-focus
 bash scripts/init-project-knowledge.sh --domain all --dry-run
 ```
 
-`--module` 和 `--case` 只在显式提供安全标识时实例化；不带参数只展示用法，`--dry-run` 不创建文件。既有前端 specs、token、Hook 和公共验收规则仍各自维护唯一来源，资料模板只建立需求 ID → 模块 → 实现 → 用例 → 偏差 → 证据的引用链。
+初始化命令不覆盖既有资料；在上述升级顺序中，旧根 `MAP.md` 生成标记内的本地条目会在预检通过后迁移到 `PROJECT_MAP.md`，其余已有内容保持不变。`--module` 和 `--case` 只在显式提供安全标识时实例化；不带参数只展示用法，`--dry-run` 不创建文件。既有前端 specs、token、Hook 和公共验收规则仍各自维护唯一来源，资料模板只建立需求 ID → 模块 → 实现 → 用例 → 偏差 → 证据的引用链。
 
 如果目标项目旧版根 `MAP.md` 含有 `<!-- init-project-knowledge generated entries -->` 标记，初始化器会在预检通过后把其中仍存在的本地链接去重登记到 `PROJECT_MAP.md`；根 `MAP.md` 的正文和原有登记不删除、不改写。标记块格式或目标路径不合法时整次初始化提前失败；重复运行只补缺失登记，不覆盖已有项目资料。
 

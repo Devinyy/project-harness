@@ -14,6 +14,6 @@ maintained_when: 案例新增、修复、复验或关闭时
 
 | 案例 ID | 文件 | 问题状态 | 验收结果 | 下一步 |
 | --- | --- | --- | --- | --- |
-| `<CASE-...>` | `badcase/<case>.md` | `<open | in-fix | recheck | closed | blocked>` | `<pass | fail | blocked | unverified>` | `<负责人/动作>` |
+| `<CASE-...>` | `badcase/<case>.md` | `<open \| in-fix \| recheck \| closed \| blocked>` | `<pass \| fail \| blocked \| unverified>` | `<负责人/动作>` |
 
 案例必须关联需求/模块、用例、偏差和证据；修复后追加修复与复验证据，关闭不删除历史。未实例化的案例不建立 Markdown 链接。

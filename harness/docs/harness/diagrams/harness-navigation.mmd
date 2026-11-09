@@ -1,24 +1,26 @@
 %% Source: MAP.md, AGENTS.md, docs/harness/verification.md
-%% Updated: 2026-11-09; conditional project paths are intentionally not asserted as present.
+%% Updated: 2026-11-10; generated paths follow project-templates/MANIFEST.tsv; conditional paths are intentionally not asserted as present.
 flowchart TD
     start["从问题开始\n静态 MAP.md"]
     project_map["项目资料登记\nPROJECT_MAP.md（初始化后创建）"]
 
-    start --> goal["需求/已确认目标"]
-    start --> system["全系统/跨端架构\n已有资料或按需 docs/architecture/"]
-    start --> adr["架构决策 / ADR\n已有资料或按需 docs/decisions/"]
+    start --> goal["需求/已确认目标\nrequirements/overview.md + requirements/confirmed-rules.md"]
+    start --> system["全系统/跨端架构\n已有资料或项目自定义 code 路径"]
+    start --> adr["架构决策 / ADR\nharness/adr.md"]
     start --> frontend["前端开发入口\ndocs/specs/INDEX.md + 00_PROJECT_FACTS.md"]
-    start --> api["API 联调 / 环境证据\n07_API_CONTRACTS.md + 按需 evidence/"]
-    start --> qa["验收 / 偏差复验\ndocs/harness/verification.md"]
-    start --> release["发布 / 回滚\n按需 release/ 与 evidence/"]
+    start --> api["API 联调 / 环境证据\n07_API_CONTRACTS.md + docs/api-integration.md + docs/environment.md + docs/backend-evidence.md"]
+    start --> qa["验收 / 偏差复验\ndocs/harness/verification.md + docs/acceptance-evidence.md"]
+    start --> release["发布 / 回滚\ndocs/release-evidence.md"]
+    start --> design["设计 token / 交互\ndesign/tokens.md + design/interaction.md"]
+    start --> experience["经验 / badcase\nexperience/MAP.md + badcase/MAP.md"]
     start --> templates["资料模板\nproject-templates/README.md + MANIFEST.tsv"]
     start --> project_map
 
     goal -. "按需建立；无确认保持 pending" .-> requirements["requirements domain\n仅显式生成 draft"]
     project_map --> requirements
-    project_map --> design["design domain\n引用既有 token/UI 规则"]
+    project_map --> design_domain["design domain\n引用既有 token/UI 规则"]
     project_map --> docs["docs domain\n只记录真实证据"]
-    project_map --> experience["experience / badcase\n可选，需真实来源"]
+    project_map --> experience_domain["experience / badcase\n可选，需真实来源"]
     templates --> requirements
 
     frontend --> state{ "docs/specs 状态" }

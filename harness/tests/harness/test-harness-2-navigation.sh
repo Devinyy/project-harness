@@ -65,6 +65,8 @@ check_local_links "$HARNESS_ROOT" "$HARNESS_ROOT/docs/harness/knowledge.md" "kno
 check_local_links "$HARNESS_ROOT" "$HARNESS_ROOT/docs/harness/verification.md" "verification"
 
 map_text=$(cat "$HARNESS_ROOT/MAP.md")
+knowledge_diagram_text=$(cat "$HARNESS_ROOT/docs/harness/diagrams/harness-knowledge-system.mmd")
+navigation_diagram_text=$(cat "$HARNESS_ROOT/docs/harness/diagrams/harness-navigation.mmd")
 assert_contains "$map_text" "Harness 本体" "MAP separates distributed harness materials"
 assert_contains "$map_text" "接入项目后的前端领域入口" "MAP routes project specs only after initialization"
 assert_contains "$map_text" "按需业务资料" "MAP routes optional business materials"
@@ -74,6 +76,111 @@ assert_contains "$map_text" "draft" "MAP routes draft specs"
 assert_contains "$map_text" "draft 继续填充" "MAP tells draft specs to continue filling"
 assert_not_contains "$map_text" "系统架构和 ADR 在哪里？ | 项目 \`docs/specs/02_ARCHITECTURE.md\`" "MAP does not collapse system architecture into frontend specs"
 assert_not_contains "$map_text" "](./docs/specs/" "MAP does not make absent project specs look present"
+
+# The static root and diagrams must follow the generated domain tree declared
+# by the manifest.  Conditional business paths belong to a target project's
+# own map, not to the distributed Harness navigation.
+for stale_path in 'docs/requirements/' 'docs/decisions/' 'docs/evidence/' 'docs/release/'; do
+  assert_not_contains "$map_text" "$stale_path" "MAP does not retain stale business path $stale_path"
+  assert_not_contains "$knowledge_diagram_text" "$stale_path" "knowledge diagram does not retain stale business path $stale_path"
+  assert_not_contains "$navigation_diagram_text" "$stale_path" "navigation diagram does not retain stale business path $stale_path"
+done
+
+manifest_file="$HARNESS_ROOT/project-templates/MANIFEST.tsv"
+manifest_domains=$(awk -F '\t' '$1 !~ /^#/ && NF == 3 { print $1 }' "$manifest_file" | sort -u)
+while IFS= read -r manifest_domain; do
+  [ -n "$manifest_domain" ] || continue
+  assert_contains "$map_text" "$manifest_domain/" "MAP routes manifest domain $manifest_domain"
+  assert_contains "$knowledge_diagram_text" "d_${manifest_domain}" "knowledge diagram declares manifest domain $manifest_domain"
+  assert_contains "$knowledge_diagram_text" "manifest --> d_${manifest_domain}" "manifest links to domain node $manifest_domain"
+  manifest_map_path=$(awk -F '\t' -v domain="$manifest_domain" '$1 == domain && $3 == "static" && $2 == domain "/MAP.md" { print $2; exit }' "$manifest_file")
+  assert_eq "$manifest_domain/MAP.md" "$manifest_map_path" "manifest has the canonical $manifest_domain MAP path"
+done <<EOF
+$manifest_domains
+EOF
+assert_contains "$navigation_diagram_text" "project_map --> design" "navigation diagram routes the manifest design domain"
+assert_contains "$navigation_diagram_text" "project_map --> experience" "navigation diagram routes the manifest experience domain"
+
+assert_manifest_static_path() {
+  local expected_path="$1"
+  local expected_kind
+  expected_kind=$(awk -F '\t' -v path="$expected_path" '$2 == path { print $3; exit }' "$manifest_file")
+  assert_eq "static" "$expected_kind" "manifest registers navigation path $expected_path as static"
+}
+
+assert_map_entry_path() {
+  local expected_path="$1"
+  local label="$2"
+  if printf '%s\n' "$map_text" | awk -F '|' -v path="$expected_path" \
+    '/^\|/ && index($3, path) { found = 1 } END { exit(found ? 0 : 1) }'; then
+    pass "$label"
+  else
+    fail "$label (missing question-table entry=$expected_path)"
+  fi
+}
+
+assert_diagram_route() {
+  local prefix="$1"
+  local basename="$2"
+  local label="$3"
+  if printf '%s\n' "$navigation_diagram_text" | awk -v prefix="$prefix" -v basename="$basename" \
+    'index($0, "start -->") && index($0, prefix) && index($0, basename) { found = 1 } END { exit(found ? 0 : 1) }'; then
+    pass "$label"
+  else
+    fail "$label (missing route=${prefix}${basename})"
+  fi
+}
+
+# These are the concrete generated paths used by the root question table and
+# Mermaid routes. Each must be backed by a manifest static row; checking the
+# full path prevents a domain-only mention from masking a stale or omitted
+# entry.
+while IFS= read -r navigation_path; do
+  [ -n "$navigation_path" ] || continue
+  assert_manifest_static_path "$navigation_path"
+  assert_map_entry_path "$navigation_path" "MAP question table exposes generated path $navigation_path"
+done <<'EOF'
+requirements/overview.md
+harness/adr.md
+docs/environment.md
+docs/api-integration.md
+docs/backend-evidence.md
+docs/acceptance-evidence.md
+docs/release-evidence.md
+design/tokens.md
+design/interaction.md
+experience/MAP.md
+badcase/MAP.md
+EOF
+assert_diagram_route "requirements/" "overview.md" "navigation diagram routes requirements overview"
+assert_diagram_route "harness/" "adr.md" "navigation diagram routes harness ADR"
+assert_diagram_route "docs/" "environment" "navigation diagram routes environment evidence"
+assert_diagram_route "docs/" "api-integration" "navigation diagram routes API evidence"
+assert_diagram_route "docs/" "backend-evidence" "navigation diagram routes backend evidence"
+assert_diagram_route "docs/" "acceptance-evidence" "navigation diagram routes acceptance evidence"
+assert_diagram_route "docs/" "release-evidence" "navigation diagram routes release evidence"
+assert_diagram_route "design/" "tokens" "navigation diagram routes design tokens"
+assert_diagram_route "design/" "interaction" "navigation diagram routes design interaction"
+assert_diagram_route "experience/" "MAP.md" "navigation diagram routes experience MAP"
+assert_diagram_route "badcase/" "MAP.md" "navigation diagram routes badcase MAP"
+
+badcase_map_text=$(cat "$HARNESS_ROOT/project-templates/badcase/MAP.md")
+assert_contains "$badcase_map_text" "| 案例 ID | 文件 | 问题状态 | 验收结果 | 下一步 |" "badcase MAP keeps the five-column index header"
+badcase_index_row=$(printf '%s\n' "$badcase_map_text" | grep -E '^\| `<CASE-' | head -1)
+assert_contains "$badcase_index_row" '\|' "badcase MAP escapes pipe-valued state options"
+badcase_columns=$(printf '%s\n' "$badcase_index_row" | awk '
+  {
+    separators = 0
+    previous = ""
+    for (i = 1; i <= length($0); i++) {
+      current = substr($0, i, 1)
+      if (current == "|" && previous != "\\") separators++
+      previous = current
+    }
+    print separators - 1
+  }
+')
+assert_eq "5" "$badcase_columns" "badcase MAP state row has five unescaped columns"
 
 knowledge_text=$(cat "$HARNESS_ROOT/docs/harness/knowledge.md")
 assert_contains "$knowledge_text" "目标、当前实现、团队规范、决策和环境证据" "knowledge contract defines the five knowledge types"
