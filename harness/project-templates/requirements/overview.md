@@ -1,5 +1,7 @@
 ---
-owner: Harness Knowledge System
+owner: pending
+created_at: {{DATE}}
+checked_at: pending
 status: template
 purpose: 记录需求范围、目标、排除项和确认来源
 source: 用户、已确认 PRD、任务单或决策记录
@@ -14,7 +16,7 @@ maintained_when: 新需求进入、范围确认或排除项变化时
 ID: REQ-<稳定编号>
 标题: <用户确认的目标标题>
 来源: <用户/PRD/任务单/决策引用>
-确认状态: confirmed | pending | rejected
+确认状态: confirmed | pending | rejected | superseded
 确认日期: <YYYY-MM-DD 或 pending>
 适用范围: <系统、端、模块、角色或环境>
 排除范围: <明确不在本次范围的能力>

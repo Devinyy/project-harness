@@ -1,5 +1,7 @@
 ---
 owner: pending
+created_at: {{DATE}}
+checked_at: pending
 status: template
 purpose: 单个失败案例的可追踪记录模板
 source: 实际失败输出、用户反馈、QA 记录和修复/复验证据
@@ -11,8 +13,11 @@ case: {{CASE}}
 
 - 案例 ID：`<CASE-...>`
 - 需求/模块 ID：`<REQ-...>` / `<模块 ID 或 none>`
-- 发现日期（UTC）：{{DATE}}
-- 当前状态：`<pending | partial | observed | not-found | blocked | unverified>`
+- 创建时间（UTC）：{{DATE}}
+- 核对时间（UTC）：`<实际核对时间；未核对写 pending>`
+- 问题状态：`<open | in-fix | recheck | closed | blocked>`
+- 实现状态：`<not-started | partial | observed | not-found>`
+- 验收结果：`<pass | fail | blocked | unverified>`
 - 发现角色：`<执行者/QA/用户>`
 
 ## 复现与影响

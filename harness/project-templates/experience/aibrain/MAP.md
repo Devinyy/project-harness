@@ -1,5 +1,7 @@
 ---
-owner: Harness Knowledge System
+owner: pending
+created_at: {{DATE}}
+checked_at: pending
 status: template
 purpose: aibrain 经验资料导航
 source: 有证据的执行前检查、运行记录和复盘

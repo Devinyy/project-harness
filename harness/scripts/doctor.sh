@@ -7,6 +7,10 @@
 
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd -P)
 . "$SCRIPT_DIR/lib/specs-state.sh"
+KNOWLEDGE_MANIFEST_LIB="$SCRIPT_DIR/lib/knowledge-manifest.sh"
+if [ -f "$KNOWLEDGE_MANIFEST_LIB" ]; then
+  . "$KNOWLEDGE_MANIFEST_LIB"
+fi
 
 record_readiness() {
   local category="$1"
@@ -41,14 +45,30 @@ if [ "$MODE" = "self" ]; then
 
   for c in bash jq git; do have "$c" && echo "✅ $c" || warn "缺少 $c（hooks 运行需要）"; done
 
+  if [ -f VERSION ]; then
+    version_value=$(sed -n '1p' VERSION | tr -d '\r')
+    if [ "$version_value" = "2.0.0" ]; then
+      echo "✅ VERSION 2.0.0"
+    else
+      err "VERSION 必须是 2.0.0（实际：$version_value）"
+    fi
+  else
+    err "缺少 VERSION（最终分发必须声明 2.0.0）"
+  fi
+
   # 机制层
-  for f in CLAUDE.md AGENTS.md README.md MAP.md docs/harness/knowledge.md docs/harness/verification.md .claude/settings.json .codex/config.toml scripts/doctor.sh scripts/init-project-knowledge.sh project-templates/MANIFEST.tsv project-templates/README.md; do
+  for f in CLAUDE.md AGENTS.md README.md MAP.md docs/harness/knowledge.md docs/harness/verification.md .claude/settings.json .codex/config.toml scripts/doctor.sh scripts/init-project-knowledge.sh scripts/lib/knowledge-manifest.sh project-templates/MANIFEST.tsv project-templates/README.md; do
     [ -f "$f" ] && echo "✅ $f" || err "缺少 $f"
   done
   for d in .claude/commands .claude/hooks .codex/hooks spec-templates project-templates; do
     [ -d "$d" ] && echo "✅ $d/" || err "缺少 $d/"
   done
   if [ -f project-templates/MANIFEST.tsv ]; then
+    if [ ! -f "$KNOWLEDGE_MANIFEST_LIB" ]; then
+      err "缺少共享 manifest 校验器：scripts/lib/knowledge-manifest.sh"
+    elif ! knowledge_manifest_validate "project-templates/MANIFEST.tsv" "project-templates"; then
+      err "共享 manifest 校验失败"
+    fi
     manifest_errors=$(awk -F '\t' '
       /^[[:space:]]*#/ || NF == 0 { next }
       NF != 3 { bad = 1; next }
@@ -124,6 +144,87 @@ fi
 
 # ---------------- 项目模式 ----------------
 echo "== Harness Doctor · 项目模式（检查业务项目）=="
+
+HARNESS_V2=0
+# A business project's own VERSION is not a Harness release marker.  Only
+# recognizable Harness 2 assets opt the project into the stricter distribution
+# checks; this keeps older projects with their own VERSION compatible while
+# still catching a damaged 2.0 installation.
+HARNESS_V2_MARKER=0
+if [ -f distribution/MANIFEST.txt ] ||
+  { [ -d docs/harness ] && [ -d project-templates ]; } ||
+  { [ -f project-templates/MANIFEST.tsv ] &&
+    [ -f scripts/init-project-knowledge.sh ] &&
+    [ -f scripts/lib/knowledge-manifest.sh ]; }; then
+  HARNESS_V2_MARKER=1
+fi
+if [ "$HARNESS_V2_MARKER" -eq 1 ]; then
+  HARNESS_V2=1
+  if [ -f VERSION ]; then
+    project_version=$(sed -n '1p' VERSION | tr -d '\r')
+    if [ "$project_version" = "2.0.0" ]; then
+      echo "✅ Harness distribution version=2.0.0"
+    else
+      err "VERSION 必须是 2.0.0（实际：$project_version）"
+    fi
+  else
+    err "缺少 VERSION（Harness 2.0 安装必须声明 2.0.0）"
+  fi
+fi
+
+v2_asset_gate() {
+  [ "$HARNESS_V2" -eq 1 ] || return 0
+  for asset in MAP.md scripts/init-project-knowledge.sh scripts/lib/knowledge-manifest.sh project-templates/MANIFEST.tsv; do
+    [ -f "$asset" ] && echo "✅ 2.0 asset: $asset" || {
+      if [ "$STRICT" -eq 1 ]; then err "缺少 2.0 公共资产：$asset"; else warn "缺少 2.0 公共资产：$asset"; fi
+    }
+  done
+  if [ -f scripts/lib/knowledge-manifest.sh ] && [ -f project-templates/MANIFEST.tsv ]; then
+    if knowledge_manifest_validate "project-templates/MANIFEST.tsv" "project-templates"; then
+      echo "✅ 2.0 manifest shared validation"
+    else
+      err "2.0 manifest shared validation failed"
+    fi
+  fi
+  if [ ! -f PROJECT_MAP.md ]; then
+    if [ "$HARNESS_KNOWLEDGE_GENERATED" -eq 1 ]; then
+      if [ "$STRICT" -eq 1 ]; then err "缺少 PROJECT_MAP.md（2.0 项目资料登记入口）"; else warn "缺少 PROJECT_MAP.md（运行初始化器后生成）"; fi
+    else
+      warn "未生成 Harness 知识领域，PROJECT_MAP.md 暂为可选（按需运行初始化器）"
+    fi
+  else
+    project_map_registered=0
+    while IFS= read -r map_link; do
+      map_target="${map_link#](}"
+      map_target="${map_target%)}"
+      case "$map_target" in
+        ''|'#'*|'http://'*|'https://'*|'mailto:'*) continue ;;
+      esac
+      map_target="${map_target%%#*}"
+      [ -n "$map_target" ] || continue
+      if [ -e "$map_target" ]; then
+        echo "✅ PROJECT_MAP link: $map_target"
+        project_map_registered=1
+      else
+        err "PROJECT_MAP 链接目标不存在：$map_target"
+      fi
+    done < <(grep -oE '\]\([^)]*\)' PROJECT_MAP.md 2>/dev/null || true)
+    if [ "$HARNESS_KNOWLEDGE_GENERATED" -eq 1 ] && [ "$project_map_registered" -eq 0 ]; then
+      err "PROJECT_MAP 缺少本工具生成的资料登记链接"
+    fi
+  fi
+}
+
+HARNESS_KNOWLEDGE_GENERATED=0
+for generated_domain_map in \
+  harness/MAP.md requirements/MAP.md design/MAP.md docs/MAP.md experience/MAP.md badcase/MAP.md; do
+  if [ -f "$generated_domain_map" ]; then
+    HARNESS_KNOWLEDGE_GENERATED=1
+    break
+  fi
+done
+
+v2_asset_gate
 
 for c in node pnpm jq git; do have "$c" && echo "✅ $c $(command -v "$c")" || { [ "$c" = pnpm ] && warn "缺少 pnpm" || err "缺少 $c"; }; done
 

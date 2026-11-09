@@ -10,8 +10,8 @@
 6. 运行 `docs/specs/00_PROJECT_FACTS.md` 声明的类型检查命令验证；按需手动跑对应端 dev
 7. 列回归范围：哪些页面/功能可能受影响
 
-不要把没有证据的猜测包装成结论。同一问题连续两轮修复仍失败则按通用验收契约升级，报告阻塞原因与已尝试的证据。
+不要把没有证据的猜测包装成结论；按通用验收契约记录失败、受阻、复验和所需证据。
 
-完成前按 [docs/harness/verification.md](../../docs/harness/verification.md) 判断是否需要独立 QA；普通类型、lint、测试、CSS 或接口映射失败由原实现者修复后交原 QA 增量复验。
+完成前引用 [docs/harness/verification.md](../../docs/harness/verification.md) 记录验收方式、实际证据和未验证范围。
 
 问题描述：$ARGUMENTS

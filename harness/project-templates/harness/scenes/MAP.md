@@ -1,5 +1,7 @@
 ---
-owner: Harness Knowledge System
+owner: pending
+created_at: {{DATE}}
+checked_at: pending
 status: template
 purpose: 场景级实现与验收入口
 source: 现有 .claude/commands、docs/harness/verification.md 和项目任务流

@@ -1,5 +1,7 @@
 ---
-owner: Harness Knowledge System
+owner: pending
+created_at: {{DATE}}
+checked_at: pending
 status: template
 purpose: 记录已确认交互、视觉状态和验收边界
 source: 用户确认需求、Figma/截图、前端 UI 指南和运行证据
@@ -15,6 +17,8 @@ maintained_when: 操作流程、状态、滚动/固定区或设备适配变化�
 ```text
 ID: UX-<稳定编号>
 目标规则: REQ-<编号> | none
+创建时间: <实际创建时间，含时区>
+核对时间: <实际核对时间，含时区；未核对写 pending>
 设计来源: <Figma Frame/node、截图范围、PRD 或用户确认>
 页面/模块: <项目路径或 module；没有写 pending>
 目标状态: <loading/empty/error/normal/disabled/expanded/modal 等已确认状态>
@@ -23,7 +27,9 @@ ID: UX-<稳定编号>
 视口/端: <项目声明的基准、最小、宽屏或多端范围>
 代码现状: <从源码/运行页面观察到的行为；不等同于目标>
 验收用例: CASE-<编号> | none
-状态: confirmed | pending | observed | blocked | unverified
+确认状态: confirmed | pending | rejected | superseded
+实现状态: not-started | partial | observed | not-found
+验收结果: pass | fail | blocked | unverified
 证据: <运行/截图/文件路径>
 ```
 

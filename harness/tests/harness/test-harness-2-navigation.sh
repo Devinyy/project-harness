@@ -80,7 +80,7 @@ assert_contains "$knowledge_text" "目标、当前实现、团队规范、决策
 assert_contains "$knowledge_text" "用户确认状态" "knowledge contract separates user confirmation state"
 assert_contains "$knowledge_text" "实现状态" "knowledge contract separates implementation state"
 assert_contains "$knowledge_text" "验收结果" "knowledge contract separates verification result"
-knowledge_allowed=$(sed -n 's/^| 实现（Implementation）.*| \(.*\) |$/\1/p' "$HARNESS_ROOT/docs/harness/knowledge.md")
+knowledge_allowed=$(sed -n 's/^| 实现（implementation） | \(.*\) |$/\1/p' "$HARNESS_ROOT/docs/harness/knowledge.md")
 knowledge_format=$(sed -n 's/^实现状态: \(.*\)$/\1/p' "$HARNESS_ROOT/docs/harness/knowledge.md")
 for implementation_state in not-started partial observed not-found; do
   assert_contains "$knowledge_allowed" "$implementation_state" "knowledge table allows implementation state $implementation_state"
@@ -128,7 +128,7 @@ for command_file in .claude/commands/*.md; do
 done
 init_text=$(cat "$HARNESS_ROOT/.claude/commands/init-specs.md")
 assert_contains "$init_text" "实现事实" "initializer records implementation facts only"
-assert_contains "$init_text" "两轮" "initializer follows the shared escalation boundary"
+assert_contains "$init_text" "人工复核" "initializer keeps human review as the activation boundary"
 assert_contains "$init_text" "missing" "initializer runs the scaffold only for missing specs"
 assert_contains "$init_text" "draft" "initializer routes draft specs to continued filling"
 assert_contains "$init_text" "active" "initializer skips active specs"
@@ -138,12 +138,14 @@ assert_not_contains "$init_text" '已存在` → 视为已初始化' "initialize
 readme_text=$(cat "$HARNESS_ROOT/README.md")
 assert_contains "$readme_text" "MAP.md" "README documents the root MAP"
 assert_contains "$readme_text" "docs/harness/" "README documents shared harness contracts"
-assert_contains "$readme_text" "Harness 2.0 开发版（基于 v2.9）" "README names the development version factually"
+assert_contains "$readme_text" "Harness 2.0.0" "README names the release version factually"
+assert_contains "$readme_text" "基于 v2.9" "README preserves the v2.9 history boundary"
 assert_contains "$readme_text" "脚本不覆盖并退出" "README distinguishes draft script behavior"
 assert_contains "$readme_text" "Claude \`/init-specs\` 继续填充" "README distinguishes Claude draft behavior"
 assert_not_contains "$readme_text" "伪装" "README avoids conversational version wording"
 changelog_text=$(cat "$HARNESS_ROOT/CHANGELOG.md")
-assert_contains "$changelog_text" "Harness 2.0 开发版（基于 v2.9）" "CHANGELOG records the development version factually"
+assert_contains "$changelog_text" "Harness 2.0.0" "CHANGELOG records the release version factually"
+assert_contains "$changelog_text" "基于 v2.9" "CHANGELOG preserves the v2.9 history boundary"
 assert_not_contains "$changelog_text" "用户面向" "CHANGELOG avoids conversational version wording"
 assert_not_contains "$changelog_text" "伪装" "CHANGELOG avoids conversational version wording"
 

@@ -20,13 +20,11 @@
 | 11_DANGEROUS_AREAS | ⚠️ 改基座/共享包/路由/请求/构建前必读 |
 | 12_TROUBLESHOOTING | 排障 |
 | 13_AGENT_POLICY | Allowed / Blocked / Ask First 权限边界 |
-| ../token-specs/README | PC 端设计 token 使用规则 |
-| ../token-specs/Light.tokens.json | Figma Light 模式原始 token |
-| ../token-specs/antd-vue-theme.ts | Ant Design Vue / dcgj-ui 主题 token |
+| `../token-specs/` | 若目标项目实际生成 token，按其 README/文件核对；未生成时标记 none/unverified |
 | dcgj-components/COMPONENT_INDEX | dcgj-ui 组件 |
 | examples/ skills-reference/ | 参考 |
 | dangerous-zones.txt | 机器可读危险区（驱动 hooks）|
 
 纪律：head -40/grep -A 10，不 cat 全文；以真实代码为准，拿不准标 `// TODO: 待确认`。
 
-状态分离：`03_BUSINESS_DOMAIN.md` 区分目标与实现事实；`00_PROJECT_FACTS.md`、架构、API 和组件文档只写可取证的当前实现。`status: active` 需要人工复核，不等于用户业务验收；验收顺序和受阻/复验处理统一引用 [verification contract](../../docs/harness/verification.md)。
+状态分离：`03_BUSINESS_DOMAIN.md` 的目标部分只引用 REQ/ADR，当前实现事实另行取证；`00_PROJECT_FACTS.md`、架构、API 和组件文档只写可取证的当前实现。`status: active` 需要人工复核，不等于用户业务验收；验收顺序和受阻/复验处理统一引用 [verification contract](../../docs/harness/verification.md)。

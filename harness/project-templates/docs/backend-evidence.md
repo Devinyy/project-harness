@@ -1,5 +1,7 @@
 ---
-owner: Harness Knowledge System
+owner: pending
+created_at: {{DATE}}
+checked_at: pending
 status: template
 purpose: 记录后端、网关、跨仓库和服务环境证据
 source: 后端仓库、服务日志、平台输出、接口响应和环境核对
@@ -16,11 +18,12 @@ ID: BACKEND-<稳定编号>
 来源仓库/服务: <名称、路径或服务标识>
 分支/提交/版本: <可追溯版本>
 环境: <实际环境；没有写 blocked>
-核对时间: {{DATE}}
+创建时间: {{DATE}}
+核对时间: <实际核对时间；未核对写 pending>
 证据来源: <命令、平台输出、日志、响应或截图路径>
 实际结果: <观察到的服务/网关/数据结果>
 与前端影响: <字段、错误码、时序、权限或兼容影响>
-状态: pass | fail | blocked | unverified
+证据结果: pass | fail | blocked | unverified
 未验证范围: <未覆盖的服务、数据、端或生产状态>
 下一步: <责任角色和行动>
 ```

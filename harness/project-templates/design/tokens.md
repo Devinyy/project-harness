@@ -1,5 +1,7 @@
 ---
-owner: Harness Knowledge System
+owner: pending
+created_at: {{DATE}}
+checked_at: pending
 status: template
 purpose: 记录 token 来源、适用范围和核对状态，不复制 token 值
 source: 项目 docs/token-specs、前端 UI 指南、设计系统和运行页面
@@ -19,9 +21,12 @@ ID: TOKEN-<稳定编号>
 主题/端: <主题、端或视口>
 目标用途: <已确认的设计约束>
 代码提取值: <从当前实现观察到的引用；不要把它写成目标>
-核对时间: {{DATE}}
+创建时间: {{DATE}}
+核对时间: <实际核对时间；未核对写 pending>
 证据: <截图、运行页面、构建或文件引用>
-状态: confirmed | pending | observed | unverified
+确认状态: confirmed | pending | rejected | superseded
+实现状态: not-started | partial | observed | not-found
+证据结果: pass | fail | blocked | unverified
 未验证范围: <组件、主题、端或视口>
 ```
 

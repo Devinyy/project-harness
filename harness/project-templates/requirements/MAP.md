@@ -1,5 +1,7 @@
 ---
-owner: Harness Knowledge System
+owner: pending
+created_at: {{DATE}}
+checked_at: pending
 status: template
 purpose: 需求目标、确认规则与模块追溯入口
 source: 用户确认需求、PRD/任务单和项目范围记录

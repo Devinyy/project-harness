@@ -1,5 +1,7 @@
 ---
-owner: Harness Knowledge System
+owner: pending
+created_at: {{DATE}}
+checked_at: pending
 status: template
 purpose: 记录 {{MODULE}} 模块的目标、实现、用例和偏差引用
 source: 已确认规则、源码/运行证据、验收用例和偏差记录
@@ -20,8 +22,9 @@ maintained_when: {{MODULE}} 的需求、实现、接口、验收或偏差变化�
 用例 ID: CASE-<编号>
 偏差 ID: DEV-<编号> | none
 证据: <{{ROOT}}docs/ 中的环境/接口/发布证据或可重跑命令>
-核对时间: {{DATE}}
-状态: not-started | partial | observed | not-found
+创建时间: {{DATE}}
+核对时间: <实际核对时间；未核对写 pending>
+实现状态: not-started | partial | observed | not-found
 验收结果: pass | fail | blocked | unverified
 下一步: <明确行动和责任角色>
 ```

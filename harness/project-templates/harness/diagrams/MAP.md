@@ -1,5 +1,7 @@
 ---
-owner: Harness Knowledge System
+owner: pending
+created_at: {{DATE}}
+checked_at: pending
 status: template
 purpose: 导航 Harness 资料结构和维护图示
 source: 当前根 MAP、入口文件、project-templates/MANIFEST.tsv
@@ -8,7 +10,7 @@ maintained_when: 目录、域、生成接口或导航关系变化时
 
 # Harness diagrams MAP
 
-图示文件只表达 Harness 资料结构与导航，不表达不存在的业务系统、模块、API 或生产环境事实。
+图示文件只表达 Harness 资料结构与导航，不表达不存在的业务系统、模块、API 或生产环境事实。分发根 `MAP.md` 保持静态；目标项目生成的 `PROJECT_MAP.md` 只登记实际存在的资料域。
 
 | 图示 | 用途 | 更新条件 |
 | --- | --- | --- |

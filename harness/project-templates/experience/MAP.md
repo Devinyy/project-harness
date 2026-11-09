@@ -1,5 +1,7 @@
 ---
-owner: Harness Knowledge System
+owner: pending
+created_at: {{DATE}}
+checked_at: pending
 status: template
 purpose: 可选的经验、预检、复盘和 badcase 导航
 source: 实际执行记录、用户反馈、运行证据和项目公共规则

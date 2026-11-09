@@ -1,13 +1,14 @@
 %% Source: MAP.md, project-templates/MANIFEST.tsv, docs/harness/knowledge.md
 %% Updated: 2026-11-09; no business modules, API responses, or production state are inferred.
 flowchart LR
-    root["MAP.md\nHarness 总入口"]
+    root["MAP.md\n静态 Harness 分发入口"]
     agents["AGENTS.md / CLAUDE.md\n执行边界与三态"]
     knowledge["docs/harness/knowledge.md\n知识记录契约"]
     verify["docs/harness/verification.md\n通用验收契约"]
     templates["project-templates/README.md\n模板规则"]
     manifest["project-templates/MANIFEST.tsv\n三列 Tab 清单"]
     init["显式初始化接口\nscripts/init-project-knowledge.sh"]
+    project_map["目标项目 PROJECT_MAP.md\n用户资料登记入口"]
     output["目标项目 draft 资料\ndocs/specs/ 之外"]
     specs["目标项目 docs/specs/\n前端实现索引/记录"]
     tokens["目标项目 docs/token-specs/\n按需引用"]
@@ -20,6 +21,8 @@ flowchart LR
     templates --> manifest
     manifest --> init
     init --> output
+    init --> project_map
+    project_map --> output
     output -. "只生成 draft；保留已有文件" .-> knowledge
     output -. "需求→模块→实现→用例→偏差→证据" .-> verify
     output -. "引用，不复制" .-> specs

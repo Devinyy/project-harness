@@ -8,15 +8,20 @@ set -u
 
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd -P)
 HARNESS_ROOT=$(cd "$SCRIPT_DIR/.." && pwd -P)
+[ -f "$SCRIPT_DIR/lib/knowledge-manifest.sh" ] || { printf '❌ 缺少共享 manifest 校验器：%s\n' "$SCRIPT_DIR/lib/knowledge-manifest.sh" >&2; exit 1; }
+. "$SCRIPT_DIR/lib/knowledge-manifest.sh"
 TEMPLATE_ROOT="$HARNESS_ROOT/project-templates"
 MANIFEST="$TEMPLATE_ROOT/MANIFEST.tsv"
 OUTPUT_ROOT=$(pwd -P)
+TARGET_ARG=""
+PROJECT_MAP_FILE="PROJECT_MAP.md"
 
 DOMAIN=""
 MODULE=""
 CASE_NAME=""
 DRY_RUN=0
 PLAN_FILE=""
+LEGACY_FILE=""
 
 usage() {
   cat <<'USAGE'
@@ -26,6 +31,7 @@ usage() {
 选项：
   --module <name>  在 requirements/modules/ 中实例化一个模块（需 --domain requirements 或 all）
   --case <name>    在 badcase/ 中实例化一个案例（需 --domain experience 或 all）
+  --target <dir>   写入已存在的目标目录；省略时使用当前目录
   --dry-run        只显示将要生成/登记的内容，不创建文件或目录
   -h, --help       显示此帮助
 
@@ -45,6 +51,9 @@ die() {
 cleanup() {
   if [ -n "$PLAN_FILE" ] && [ -f "$PLAN_FILE" ]; then
     rm -f "$PLAN_FILE"
+  fi
+  if [ -n "$LEGACY_FILE" ] && [ -f "$LEGACY_FILE" ]; then
+    rm -f "$LEGACY_FILE"
   fi
 }
 
@@ -87,6 +96,13 @@ while [ "$#" -gt 0 ]; do
       CASE_NAME="$2"
       shift 2
       ;;
+    --target)
+      [ "$#" -ge 2 ] || die "--target 缺少参数值；请指定已存在的目标目录" 2
+      [ -n "$2" ] || die "--target 参数值不能为空" 2
+      [ -z "$TARGET_ARG" ] || die "--target 只能指定一次" 2
+      TARGET_ARG="$2"
+      shift 2
+      ;;
     --dry-run)
       DRY_RUN=1
       shift
@@ -101,6 +117,68 @@ while [ "$#" -gt 0 ]; do
   esac
 done
 
+if [ -n "$TARGET_ARG" ]; then
+  case "$TARGET_ARG" in
+    -*) die "--target 缺少有效目录参数" 2 ;;
+  esac
+  target_probe_base=$(pwd -P) || die "无法解析 --target 的当前目录" 2
+  case "$TARGET_ARG" in
+    /*) target_probe="$TARGET_ARG" ;;
+    *) target_probe="$target_probe_base/$TARGET_ARG" ;;
+  esac
+  target_probe_current="/"
+  target_probe_ifs="$IFS"
+  IFS=/
+  for target_probe_component in $target_probe; do
+    case "$target_probe_component" in
+      ''|.) continue ;;
+      ..)
+        target_probe_current="${target_probe_current%/*}"
+        [ -n "$target_probe_current" ] || target_probe_current="/"
+        ;;
+      *)
+        if [ "$target_probe_current" = "/" ]; then
+          target_probe_next="/$target_probe_component"
+        else
+          target_probe_next="$target_probe_current/$target_probe_component"
+        fi
+        [ ! -L "$target_probe_next" ] || die "--target 路径包含符号链接组件：$target_probe_component" 2
+        target_probe_current="$target_probe_next"
+        ;;
+    esac
+  done
+  IFS="$target_probe_ifs"
+  [ -d "$TARGET_ARG" ] || die "目标目录不存在或不是目录：$TARGET_ARG" 2
+  [ ! -L "$TARGET_ARG" ] || die "目标目录不能是符号链接：$TARGET_ARG" 2
+  OUTPUT_ROOT=$(cd "$TARGET_ARG" && pwd -P) || die "无法解析目标目录：$TARGET_ARG" 2
+else
+  OUTPUT_ROOT=$(pwd -P) || die "无法解析当前工作目录" 2
+fi
+
+# Running without an explicit target from this repository's own checkout is a
+# common accidental write.  Identify the source checkout by its fixed
+# repository layout and tracked source paths: a normal installed package may
+# itself be the root of a business Git repository and may contain a user's
+# docs/superpowers directory, so those generic markers are not sufficient.
+DEVELOPMENT_REPO_ROOT=$(git -C "$HARNESS_ROOT" rev-parse --show-toplevel 2>/dev/null || true)
+DEVELOPMENT_CHECKOUT=0
+if [ -n "$DEVELOPMENT_REPO_ROOT" ] &&
+  [ "$HARNESS_ROOT" = "$DEVELOPMENT_REPO_ROOT/harness" ] &&
+  [ -d "$HARNESS_ROOT/project-templates" ] && [ -d "$HARNESS_ROOT/docs/superpowers" ] &&
+  git -C "$DEVELOPMENT_REPO_ROOT" ls-files --error-unmatch \
+    harness/scripts/init-project-knowledge.sh \
+    harness/scripts/doctor.sh \
+    harness/project-templates/MANIFEST.tsv >/dev/null 2>&1; then
+  DEVELOPMENT_CHECKOUT=1
+fi
+if [ -z "$TARGET_ARG" ] && [ "$DEVELOPMENT_CHECKOUT" -eq 1 ]; then
+  case "$OUTPUT_ROOT" in
+    "$DEVELOPMENT_REPO_ROOT"|"$DEVELOPMENT_REPO_ROOT"/*)
+      die "拒绝在 Harness 开发 checkout 中隐式生成资料；请使用 --target 指定业务项目目录" 2
+      ;;
+  esac
+fi
+
 [ -n "$DOMAIN" ] || die "缺少 --domain；请使用 --help 查看用法" 2
 case "$DOMAIN" in
   harness|requirements|design|docs|experience|all) ;;
@@ -112,8 +190,13 @@ esac
 # target path or a renderer command.
 valid_name() {
   local value="$1"
+  local lower_value
   case "$value" in
     ''|.|..|/*|*/*|*\\*|*..*|*[!A-Za-z0-9._-]*) return 1 ;;
+  esac
+  lower_value=$(printf '%s' "$value" | LC_ALL=C tr '[:upper:]' '[:lower:]')
+  case "$lower_value" in
+    _module|_case|map|project_map) return 1 ;;
   esac
   return 0
 }
@@ -136,7 +219,7 @@ valid_relative_path() {
 }
 
 if [ -n "$MODULE" ]; then
-  valid_name "$MODULE" || die "非法 module 名称：$MODULE（不能包含绝对路径、斜杠、.. 或控制字符）" 2
+  valid_name "$MODULE" || die "非法或保留 module 名称：$MODULE（不能包含绝对路径、斜杠、..、控制字符或 MAP/PROJECT_MAP/_module/_case）" 2
   case "$DOMAIN" in
     requirements|all) ;;
     *) die "--module 只能与 --domain requirements 或 all 一起使用" 2 ;;
@@ -144,7 +227,7 @@ if [ -n "$MODULE" ]; then
 fi
 
 if [ -n "$CASE_NAME" ]; then
-  valid_name "$CASE_NAME" || die "非法 case 名称：$CASE_NAME（不能包含绝对路径、斜杠、.. 或控制字符）" 2
+  valid_name "$CASE_NAME" || die "非法或保留 case 名称：$CASE_NAME（不能包含绝对路径、斜杠、..、控制字符或 MAP/PROJECT_MAP/_module/_case）" 2
   case "$DOMAIN" in
     experience|all) ;;
     *) die "--case 只能与 --domain experience 或 all 一起使用" 2 ;;
@@ -156,6 +239,8 @@ fi
 [ -f "$MANIFEST" ] || die "找不到模板清单：$MANIFEST" 1
 [ ! -L "$MANIFEST" ] || die "模板清单不能是符号链接：$MANIFEST" 1
 [ -r "$MANIFEST" ] || die "模板清单不可读：$MANIFEST" 1
+
+knowledge_manifest_validate "$MANIFEST" "$TEMPLATE_ROOT" || die "模板清单校验失败，未写入任何目标文件" 1
 
 PLAN_FILE=$(mktemp "${TMPDIR:-/tmp}/harness-project-knowledge-plan.XXXXXX") || die "无法创建临时计划文件" 1
 
@@ -173,7 +258,9 @@ append_plan() {
   while IFS=$'\t' read -r existing_target _ _ _; do
     [ "$existing_target" = "$target_rel" ] && die "模板清单产生重复目标路径：$target_rel" 1
   done < "$PLAN_FILE"
-  printf '%s\t%s\t%s\t%s\n' "$target_rel" "$source_rel" "$kind" "$plan_domain" >> "$PLAN_FILE"
+  if ! printf '%s\t%s\t%s\t%s\n' "$target_rel" "$source_rel" "$kind" "$plan_domain" >> "$PLAN_FILE"; then
+    die "模板生成计划文件写入失败：$PLAN_FILE" 1
+  fi
 }
 
 validate_manifest_row() {
@@ -289,6 +376,7 @@ validate_source() {
   done
   IFS="$old_ifs"
   [ -f "$TEMPLATE_ROOT/$relative_path" ] || { error "找不到模板源文件：$relative_path"; return 1; }
+  [ -r "$TEMPLATE_ROOT/$relative_path" ] || { error "模板源文件不可读：$relative_path"; return 1; }
   return 0
 }
 
@@ -296,22 +384,89 @@ validate_target() {
   local relative_path="$1"
   local current="$OUTPUT_ROOT"
   local component
+  local next_path
+  local sibling
+  local sibling_name
+  local component_key
+  local sibling_key
+  local is_last=0
+  local old_ifs
   valid_relative_path "$relative_path" || { error "目标路径不安全：$relative_path"; return 1; }
-  local old_ifs="$IFS"
+  [ -d "$OUTPUT_ROOT" ] || { error "目标根不是目录：$OUTPUT_ROOT"; return 1; }
+  [ -r "$OUTPUT_ROOT" ] && [ -x "$OUTPUT_ROOT" ] || { error "目标根缺少读取/遍历权限：$OUTPUT_ROOT"; return 1; }
+  old_ifs="$IFS"
   IFS=/
   for component in $relative_path; do
-    current="$current/$component"
-    if [ -L "$current" ]; then
+    next_path="$current/$component"
+    [ "$next_path" = "$OUTPUT_ROOT/$relative_path" ] && is_last=1 || is_last=0
+    component_key=$(knowledge_manifest_lower "$component")
+
+    # Detect case collisions even on a case-sensitive CI filesystem; on a
+    # case-insensitive distribution the same collision would otherwise be an
+    # implicit overwrite.
+    if [ -d "$current" ]; then
+      while IFS= read -r sibling; do
+        [ -e "$sibling" ] || [ -L "$sibling" ] || continue
+        sibling_name="${sibling##*/}"
+        sibling_key=$(knowledge_manifest_lower "$sibling_name")
+        if [ "$sibling_key" = "$component_key" ] && [ "$sibling_name" != "$component" ]; then
+          error "目标路径存在大小写冲突：$relative_path（已有 $sibling_name）"
+          IFS="$old_ifs"
+          return 1
+        fi
+      done < <(find "$current" -maxdepth 1 -mindepth 1 -print 2>/dev/null)
+    fi
+
+    if [ -L "$next_path" ]; then
       error "目标路径存在符号链接逃逸风险：$relative_path"
       IFS="$old_ifs"
       return 1
     fi
+    if [ -e "$next_path" ]; then
+      if [ "$is_last" -eq 1 ]; then
+        if [ ! -f "$next_path" ]; then
+          error "目标路径已存在但不是普通文件：$relative_path"
+          IFS="$old_ifs"
+          return 1
+        fi
+        case "$component" in
+          MAP.md|PROJECT_MAP.md)
+            [ -w "$next_path" ] || {
+              error "索引目标缺少写权限：$relative_path"
+              IFS="$old_ifs"
+              return 1
+            }
+            ;;
+        esac
+      else
+        if [ ! -d "$next_path" ]; then
+          error "目标路径中间组件是普通文件而非目录：$relative_path"
+          IFS="$old_ifs"
+          return 1
+        fi
+        [ -r "$next_path" ] && [ -x "$next_path" ] || {
+          error "目标父目录缺少读取/遍历权限：$next_path"
+          IFS="$old_ifs"
+          return 1
+        }
+        [ -w "$next_path" ] || {
+          error "目标父目录缺少写权限：$next_path"
+          IFS="$old_ifs"
+          return 1
+        }
+      fi
+    else
+      if [ -d "$current" ]; then
+        [ -w "$current" ] && [ -x "$current" ] || {
+          error "目标父目录缺少写权限：$current"
+          IFS="$old_ifs"
+          return 1
+        }
+      fi
+    fi
+    current="$next_path"
   done
   IFS="$old_ifs"
-  if [ -e "$OUTPUT_ROOT/$relative_path" ] && [ ! -f "$OUTPUT_ROOT/$relative_path" ]; then
-    error "目标路径已存在但不是普通文件：$relative_path"
-    return 1
-  fi
   return 0
 }
 
@@ -348,7 +503,7 @@ done < "$PLAN_FILE"
 # Root and local MAP files are also targets. Validate them before creating any
 # directory so a broken or symlinked navigation tree cannot receive a partial
 # write.
-validate_target "MAP.md" || target_error=1
+validate_target "$PROJECT_MAP_FILE" || target_error=1
 if [ -n "$MODULE" ]; then
   validate_target "requirements/MAP.md" || target_error=1
   validate_target "requirements/modules/MAP.md" || target_error=1
@@ -359,6 +514,67 @@ if [ -n "$CASE_NAME" ]; then
 fi
 [ "$source_error" -eq 0 ] || die "模板源校验失败，未写入任何目标文件" 1
 [ "$target_error" -eq 0 ] || die "目标路径校验失败，未写入任何目标文件" 1
+
+collect_legacy_map_entries() {
+  local legacy_map="$OUTPUT_ROOT/MAP.md"
+  local line=""
+  local link=""
+  local label=""
+  local target_path=""
+  local in_block=0
+  [ -f "$legacy_map" ] || return 0
+  grep -F -q '<!-- init-project-knowledge generated entries -->' "$legacy_map" 2>/dev/null || return 0
+  LEGACY_FILE=$(mktemp "${TMPDIR:-/tmp}/harness-project-knowledge-legacy.XXXXXX") || {
+    die "无法创建旧 MAP 迁移计划文件" 1
+  }
+  while IFS= read -r line || [ -n "$line" ]; do
+    if [ "$line" = '<!-- init-project-knowledge generated entries -->' ]; then
+      in_block=1
+      continue
+    fi
+    [ "$in_block" -eq 1 ] || continue
+    case "$line" in
+      *']('*')'*) ;;
+      *)
+        case "$line" in
+          '- ['*)
+            error "旧 MAP 迁移候选不是有效本地 Markdown 链接：$line"
+            return 1
+            ;;
+        esac
+        continue
+        ;;
+    esac
+    link=$(printf '%s\n' "$line" | sed -nE 's/.*\]\(([^)]*)\).*/\1/p')
+    label=$(printf '%s\n' "$line" | sed -nE 's/.*\[([^]]*)\]\([^)]*\).*/\1/p')
+    [ -n "$link" ] && [ -n "$label" ] || {
+      error "旧 MAP 迁移候选链接格式无效：$line"
+      return 1
+    }
+    case "$link" in
+      ./*) ;;
+      *) error "旧 MAP 迁移候选必须是根相对本地链接：$link"; return 1 ;;
+    esac
+    target_path="${link#./}"
+    target_path="${target_path%%#*}"
+    valid_relative_path "$target_path" || {
+      error "旧 MAP 迁移候选路径不安全：$link"
+      return 1
+    }
+    if ! plan_has_target "$target_path" && [ ! -f "$OUTPUT_ROOT/$target_path" ]; then
+      error "旧 MAP 迁移候选目标不存在：$link"
+      return 1
+    fi
+    validate_target "$target_path" || return 1
+    if ! printf '%s\t%s\n' "$label" "$link" >> "$LEGACY_FILE"; then
+      error "旧 MAP 迁移计划写入失败"
+      return 1
+    fi
+  done < "$legacy_map"
+  return 0
+}
+
+collect_legacy_map_entries || die "旧 MAP 迁移预检失败，未写入任何目标文件" 1
 
 utc_date=$(LC_ALL=C date -u +%Y-%m-%d) || die "无法取得 UTC 日期" 1
 
@@ -435,7 +651,7 @@ if [ "$DRY_RUN" -eq 1 ]; then
   while IFS=$'\t' read -r target_rel source_rel _ _; do
     printf 'DRY-RUN 生成 %s（源 %s）\n' "$target_rel" "$source_rel"
   done < "$PLAN_FILE"
-  printf 'DRY-RUN 登记根 MAP：%s\n' "$OUTPUT_ROOT/MAP.md"
+  printf 'DRY-RUN 登记项目 MAP：%s\n' "$OUTPUT_ROOT/$PROJECT_MAP_FILE"
   [ -n "$MODULE" ] && printf 'DRY-RUN 登记模块 MAP：requirements/modules/%s.md\n' "$MODULE"
   [ -n "$CASE_NAME" ] && printf 'DRY-RUN 登记案例 MAP：badcase/%s.md\n' "$CASE_NAME"
   exit 0
@@ -447,13 +663,16 @@ while IFS=$'\t' read -r target_rel source_rel _ _; do
 done < "$PLAN_FILE"
 [ "$write_error" -eq 0 ] || die "模板生成失败；已生成的文件未覆盖，但请检查上述错误" 1
 
-root_map="$OUTPUT_ROOT/MAP.md"
-if [ ! -e "$root_map" ]; then
+project_map="$OUTPUT_ROOT/$PROJECT_MAP_FILE"
+if [ ! -e "$project_map" ]; then
   mkdir -p "$OUTPUT_ROOT" || die "无法准备目标根目录" 1
   {
-    printf '# Project knowledge MAP\n\n'
-    printf '按需生成的资料初始为 draft；请以实际证据复核后再改状态。\n'
-  } > "$root_map" || die "无法创建根 MAP" 1
+    printf '%s\n' '---'
+    printf '%s\n' 'status: draft'
+    printf '%s\n' '---'
+    printf '\n# 项目资料登记\n\n'
+    printf '本入口只登记本次实际生成的资料域；未生成领域不在此伪造链接。\n'
+  } > "$project_map" || die "无法创建项目资料登记 PROJECT_MAP.md" 1
 fi
 
 append_map_entry() {
@@ -489,7 +708,7 @@ nearest_map_for() {
   local directory
   case "$target_rel" in
     */*) directory="${target_rel%/*}" ;;
-    *) printf 'MAP.md'; return 0 ;;
+    *) printf '%s' "$PROJECT_MAP_FILE"; return 0 ;;
   esac
   if [ "${target_rel##*/}" = "MAP.md" ]; then
     case "$directory" in
@@ -507,7 +726,7 @@ nearest_map_for() {
       *) directory="" ;;
     esac
   done
-  printf 'MAP.md'
+  printf '%s' "$PROJECT_MAP_FILE"
 }
 
 relative_link() {
@@ -549,11 +768,17 @@ map_label_for() {
 }
 
 map_error=0
+if [ -n "$LEGACY_FILE" ] && [ -s "$LEGACY_FILE" ]; then
+  while IFS=$'\t' read -r legacy_label legacy_link; do
+    append_map_entry "$PROJECT_MAP_FILE" "$legacy_link" "$legacy_label" || map_error=1
+  done < "$LEGACY_FILE"
+fi
+
 for selected in $selected_domains; do
-  append_map_entry "MAP.md" "./$selected/MAP.md" "$selected" || map_error=1
+  append_map_entry "$PROJECT_MAP_FILE" "./$selected/MAP.md" "$selected" || map_error=1
 done
 if [ "$DOMAIN" = "all" ] || [ "$DOMAIN" = "experience" ]; then
-  append_map_entry "MAP.md" "./badcase/MAP.md" "badcase" || map_error=1
+  append_map_entry "$PROJECT_MAP_FILE" "./badcase/MAP.md" "badcase" || map_error=1
   append_map_entry "experience/MAP.md" "../badcase/MAP.md" "badcase" || map_error=1
 fi
 

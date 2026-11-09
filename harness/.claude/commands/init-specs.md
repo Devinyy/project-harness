@@ -25,13 +25,13 @@
    - 页面示例：仅从项目中真实存在的列表、新建/编辑、详情页面提炼；按页面类型组织并标明可复用模式与业务特例
 6. 逐份替换 `docs/specs/` 里的 `<填写：…>` 占位符；删除不适用章节，补真实情况。
 7. **务必校准 `docs/specs/dangerous-zones.txt`**（hooks 危险区来源）；并核对 `docs/specs/verify.cmd`（fast）与 `docs/specs/verify.full.cmd`（可选 full），删除不存在的命令，如 monorepo 需补 filter。
-8. **真实性纪律**：实现事实只写代码、配置或运行证据确认的内容，拿不准写 `// TODO: 待确认` 留空，**禁止编造**。用户目标和业务决策按知识契约保留稳定编号，不用目标改写实现事实；`status` 暂留 `draft`，`last_verified` 填今天。
+8. **真实性纪律**：实现事实只写代码、配置或运行证据确认的内容，拿不准写 `// TODO: 待确认` 留空，**禁止编造**。用户目标和业务决策按知识契约保留稳定编号，不用目标改写实现事实；`status` 暂留 `draft`，`created_at` 记录生成时间，`checked_at` 只有实际复核后填写。
 
 ## 收尾
 
 9. 删除 `docs/specs/_RULE.md`；运行 `bash scripts/doctor.sh` 确认 specs 就绪。
 10. 输出生成清单 + 每份一句话总结 + 所有 `待确认` 项请人工复核；复核后把各文档 `status` 改 `active`。`active` 只表示实现事实复核，不代表用户业务验收。
 
-初始化完成后按 [docs/harness/verification.md](../../docs/harness/verification.md) 留下命令、环境和未验证范围；同一问题连续两轮修复仍失败才升级。
+初始化完成后按 [docs/harness/verification.md](../../docs/harness/verification.md) 留下命令、环境、验收结果和未验证范围。
 
 可选范围/侧重：$ARGUMENTS

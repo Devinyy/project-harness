@@ -1,10 +1,10 @@
 # Project Harness（通用 · specs 外置 + 自动生成）
 
-**Harness 2.0 开发版（基于 v2.9）**　·　既有发行版本仍为 **v2.9**　·　完整变更见 [`CHANGELOG.md`](./CHANGELOG.md)
+**Harness 2.0.0**　·　基于 v2.9 机制演进　·　既有 v2.9 历史记录保持不变　·　完整变更见 [`CHANGELOG.md`](./CHANGELOG.md)
 
 把项目规格（specs）转化为可执行的 AI agent 约束（harness）。支持 Claude Code / Codex / Cursor / Windsurf。
 
-从问题出发的总导航见 [`MAP.md`](./MAP.md)；通用知识与验收规则分别见 [`docs/harness/knowledge.md`](./docs/harness/knowledge.md) 和 [`docs/harness/verification.md`](./docs/harness/verification.md)。本仓库当前为 Harness 2.0 开发版，基于 v2.9 机制增加导航与知识契约。
+从问题出发的静态工具导航见 [`MAP.md`](./MAP.md)；接入项目后由根 `PROJECT_MAP.md` 登记实际生成的资料域。通用知识与验收规则分别见 [`docs/harness/knowledge.md`](./docs/harness/knowledge.md) 和 [`docs/harness/verification.md`](./docs/harness/verification.md)。
 
 **核心理念：harness 不内置任何项目的真实 specs，只带「生成规则」（`spec-templates/`）。**
 - specs 由每个项目在自己根目录的 `docs/specs/` 维护。
@@ -22,6 +22,7 @@
 ├── CLAUDE.md                 # 通用：角色 + 原则 + "先读 docs/specs/，无则 /init-specs"
 ├── AGENTS.md                 # 跨 agent 共享指令
 ├── MAP.md                    # 总导航：需求、架构、开发、证据、验收、发布入口
+├── VERSION                   # Harness 版本：2.0.0
 ├── docs/harness/              # 通用知识与验收契约（不含业务项目事实）
 │   ├── knowledge.md
 │   └── verification.md
@@ -68,10 +69,21 @@
 
 > **模版骨架 = 精炼版（A）**：保留真实项目的章节结构，正文挖空为 `<填写：…>` 占位符 + flavor 固定常量（栈/危险区/约定）。丢一个 harness 文件夹即自带全部生成依赖，无外部依赖。
 
+## 版本、分发与升级
+
+当前发布版本由根 `VERSION` 固定为 `2.0.0`。归档分发只以 `distribution/MANIFEST.txt` 列出的工具资产为准，构建入口为：
+
+```bash
+# DIR 必须位于 Harness 源码树之外（例如 /tmp/harness-dist）
+bash scripts/package-harness.sh --output DIR
+```
+
+构建产物为 `project-harness-2.0.0.tar.gz` 及对应 `.sha256`；构建允许使用系统 Python 3 标准库，安装和运行 Harness 不新增业务项目依赖。升级前先对照 `distribution/MANIFEST.txt` 和归档清单，备份并保留目标项目根 `PROJECT_MAP.md`、已生成领域资料、`docs/specs/`、`docs/token-specs/` 与自定义入口；不得盲目覆盖用户内容。长期效率、维护收益和实际填写率需要接入项目试点验证，不作为 2.0.0 归档已证明的业务结果。
+
 ## 接入一个项目
 
 ```bash
-# 1. 把本 harness 的内容放到项目根（MAP.md/docs/harness/.claude/.codex/CLAUDE.md/AGENTS.md/scripts/.cursor/.windsurfrules/spec-templates）
+# 1. 使用分发归档中的清单资产放到项目根（保留用户 PROJECT_MAP.md、领域资料、specs/token 与自定义入口）
 # 2. 加执行权限
 chmod +x .claude/hooks/*.sh .codex/hooks/*.sh scripts/*.sh
 # 3. 环境检查（项目模式会提示 docs/specs 是否就绪）
@@ -90,7 +102,7 @@ bash scripts/doctor.sh
 > ⚠️ **`scripts/init-specs.sh` 只做第①步（复制骨架），不填充内容**——产物全是 `<填写：…>` 占位符。只有 Claude Code 的 `/init-specs` 会接着自动做第②步探索+填充。其它 agent 需自己驱动填充。
 > 生成物 frontmatter 标 `status: draft`，**人工复核后改 `active`**；复核可用 `bash scripts/doctor.sh --strict` 闸门（占位符/草稿未清则 fail）。
 
-> 分发 Harness 时必须同时包含 `MAP.md` 与 `docs/harness/`；它们是通用导航/契约，不承载真实业务 specs。已有初始化命令与 `docs/specs/` 路径保持不变。
+> 分发 Harness 时必须同时包含 `MAP.md`、`docs/harness/`、`project-templates/` 和对应脚本；它们是通用导航/契约，不承载真实业务 specs。初始化器创建的用户索引固定为项目根 `PROJECT_MAP.md`，已有 `docs/specs/` 路径保持不变。
 
 > 初始化按三态处理：`missing` 执行脚手架；`draft` 时脚本不覆盖并退出，Claude `/init-specs` 继续填充；`active` 时脚本与 `/init-specs` 均跳过。仅存在空的 `docs/specs/` 目录不算已初始化；已有现成 specs 的项目可直接放入项目根后按状态复核。
 
@@ -109,6 +121,8 @@ bash scripts/init-project-knowledge.sh --domain all --dry-run
 
 `--module` 和 `--case` 只在显式提供安全标识时实例化；不带参数只展示用法，`--dry-run` 不创建文件。既有前端 specs、token、Hook 和公共验收规则仍各自维护唯一来源，资料模板只建立需求 ID → 模块 → 实现 → 用例 → 偏差 → 证据的引用链。
 
+如果目标项目旧版根 `MAP.md` 含有 `<!-- init-project-knowledge generated entries -->` 标记，初始化器会在预检通过后把其中仍存在的本地链接去重登记到 `PROJECT_MAP.md`；根 `MAP.md` 的正文和原有登记不删除、不改写。标记块格式或目标路径不合法时整次初始化提前失败；重复运行只补缺失登记，不覆盖已有项目资料。
+
 ## specs 驱动机制
 
 | 机制 | 来源 | 说明 |
@@ -116,7 +130,7 @@ bash scripts/init-project-knowledge.sh --domain all --dry-run
 | 危险区拦截 | `docs/specs/dangerous-zones.txt` | guard hook 逐行子串匹配；缺失时用内置通用兜底 |
 | fast profile | `docs/specs/verify.cmd` | Stop hook 按顺序执行；通常是 typecheck/validate，一行一个命令 |
 | full profile | `docs/specs/verify.full.cmd` | 可选；人工/CI 执行 fast 后再执行真实存在的 lint/build/test/smoke |
-| PC 设计 token | `docs/token-specs/` | PC 页面色号、字号、主题覆盖以 Light.tokens.json / antd-vue-theme.ts 为准 |
+| PC 设计 token | `docs/token-specs/`（目标项目实际提供时） | 以目标项目已生成并核对的 token/主题来源为准；未提供时记录 `none`/`unverified`，不假定 `Light.tokens.json` 或主题文件存在 |
 | box-sizing 校验 | uni-app 项目门禁 | 仅当 `src/pages.json` 存在时启用 |
 | 显式权限 | `docs/specs/13_AGENT_POLICY.md` | 统一使用 Allowed / Blocked / Ask First，避免把风险操作默认为已授权 |
 | 按需查阅 | `docs/specs/00_PROJECT_FACTS.md` + `INDEX.md` | agent 先读事实与权限边界，再按需 grep 其余 |
@@ -183,4 +197,4 @@ bash scripts/run-verification-profile.sh full --compare "$BASELINE_FILE"
 
 ## Changelog
 
-完整变更记录见 [`CHANGELOG.md`](./CHANGELOG.md)。当前为 **Harness 2.0 开发版（基于 v2.9）**；既有发行版本仍为 **v2.9**，历史基线改动仍见变更记录。
+完整变更记录见 [`CHANGELOG.md`](./CHANGELOG.md)。当前为 **Harness 2.0.0**；既有 v2.9 历史基线改动仍见变更记录。

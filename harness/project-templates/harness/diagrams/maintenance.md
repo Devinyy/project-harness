@@ -1,5 +1,7 @@
 ---
-owner: Harness Knowledge System
+owner: pending
+created_at: {{DATE}}
+checked_at: pending
 status: template
 purpose: 规定 Mermaid 图示的维护与证据边界
 source: MAP、入口文件、MANIFEST.tsv 和初始化器接口

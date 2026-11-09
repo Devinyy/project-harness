@@ -1,5 +1,7 @@
 ---
-owner: Harness Knowledge System
+owner: pending
+created_at: {{DATE}}
+checked_at: pending
 status: template
 purpose: 设计目标、token 来源和交互约束入口
 source: 已确认设计、项目 token、前端 UI 指南和运行证据

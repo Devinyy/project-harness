@@ -2,6 +2,7 @@
 
 所有 AI 编码 agent 的共享入口；Claude Code 用户同时阅读 `CLAUDE.md`。
 总导航：[MAP.md](./MAP.md)；通用知识与验收契约：[docs/harness/knowledge.md](./docs/harness/knowledge.md)、[docs/harness/verification.md](./docs/harness/verification.md)。
+接入项目后的用户资料索引固定为根 `PROJECT_MAP.md`；`MAP.md` 是随包分发的静态导航。
 
 ## Specs 状态
 

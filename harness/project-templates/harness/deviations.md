@@ -1,5 +1,7 @@
 ---
-owner: Harness Knowledge System
+owner: pending
+created_at: {{DATE}}
+checked_at: pending
 status: template
 purpose: 跟踪目标与实现之间的偏差、修复和关闭证据
 source: 需求规则、实现证据、QA 结果和用户决策
@@ -18,13 +20,14 @@ ID: DEV-<稳定编号>
 当前证据: <源码/配置/命令/运行/QA 证据>
 差异: <目标与当前实现的可观察差异>
 影响: <用户、权限、数据、接口、公共能力、端或发布影响>
-状态: open | in-fix | recheck | closed | blocked
+偏差状态: open | in-fix | recheck | closed | blocked
 处理角色: <原实现者/独立 QA/用户/其他角色>
 下一步: <明确行动、前提和时间>
 修复引用: <提交、文件或决策；未修复写 pending>
 复验证据: <原 QA 的增量结果；未复验写 pending>
 关闭证据: <通过条件和来源；未关闭写 none>
-核对时间: <YYYY-MM-DD 或含时区时间>
+创建时间: <实际创建时间，含时区>
+核对时间: <实际核对时间，含时区；未核对写 pending>
 未验证范围: <仍未覆盖的内容>
 ```
 

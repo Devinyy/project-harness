@@ -26,6 +26,6 @@
 
 所有决策给依据，不要写"建议用 store"而不说为什么。
 
-方案完成前按 [docs/harness/verification.md](../../docs/harness/verification.md) 分开记录已确认目标、当前实现证据和验收结果；涉及公共能力、接口、权限或需要运行判断的交互时安排独立 QA，受阻范围不得伪造通过。
+方案完成前按 [docs/harness/verification.md](../../docs/harness/verification.md) 分开记录已确认目标、当前实现证据、验收结果和受阻范围。
 
 需求描述：$ARGUMENTS

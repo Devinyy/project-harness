@@ -1,5 +1,7 @@
 ---
 owner: pending
+created_at: {{DATE}}
+checked_at: pending
 status: template
 purpose: 有证据的执行复盘与后续动作
 source: 实际命令输出、运行观察、QA 结果和用户反馈
@@ -8,11 +10,14 @@ maintained_when: 任务结束、偏差修复或新证据产生时
 
 # Retrospective
 
-- 记录日期（UTC）：{{DATE}}
+- 创建时间（UTC）：{{DATE}}
+- 核对时间（UTC）：`<实际核对时间；未核对写 pending>`
 - 需求/模块 ID：`<REQ-...>` / `<模块 ID 或 none>`
 - 关联用例：`<CASE-...>`
 - 执行者与独立 QA：`<角色；自检不计独立 QA>`
-- 结果状态：`<pending | partial | observed | not-found | blocked | unverified>`
+- 执行计划：`<planned | in-progress | blocked | done | cancelled>`
+- 实现状态：`<not-started | partial | observed | not-found>`
+- 验收结果：`<pass | fail | blocked | unverified>`
 
 ## 事实与证据
 

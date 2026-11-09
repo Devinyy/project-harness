@@ -9,8 +9,8 @@
 5. 全部完成再跑一次类型检查与 lint（uni-app 类无单测，不要假设 pnpm test）
 6. `git diff --stat` 确认改动范围
 
-禁止：为"优雅"重构大面积历史代码；将局部需求上升为全局基础设施修改；未盘点影响面就改公共行为。同一问题连续两轮修复仍失败才升级，不把普通验证失败交给主 Agent 中转。
+禁止：为"优雅"重构大面积历史代码；将局部需求上升为全局基础设施修改；未盘点影响面就改公共行为。普通验证问题在当前执行角色内处理，并按通用验收契约记录结果。
 
 重构目标：$ARGUMENTS
 
-完成前按 [docs/harness/verification.md](../../docs/harness/verification.md) 记录行为不变证据；涉及公共能力、接口、权限或运行交互时安排独立 QA并由原 QA 增量复验。
+完成前按 [docs/harness/verification.md](../../docs/harness/verification.md) 记录行为不变证据、验收结果和未验证范围。

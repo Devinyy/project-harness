@@ -1,0 +1,21 @@
+# Harness 2.0.0 explicit distribution allowlist.
+# A trailing slash names a directory prefix; every other line names one file.
+.claude/
+.codex/
+.cursor/
+.windsurfrules
+AGENTS.md
+CLAUDE.md
+MAP.md
+README.md
+CHANGELOG.md
+VERSION
+LICENSE
+.gitattributes
+scripts/
+tests/
+spec-templates/
+token-templates/
+project-templates/
+docs/harness/
+distribution/

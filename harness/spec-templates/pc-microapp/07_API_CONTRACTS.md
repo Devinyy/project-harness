@@ -3,8 +3,9 @@
 > 🧩 模版骨架（A 精炼版）：保留结构，正文按真实代码填充；拿不准标 `// TODO: 待确认`，禁止编造。
 
 ---
-owner: Frontend Team
-last_verified: <生成时填写>
+owner: pending
+created_at: <生成时填写>
+checked_at: <实际复核时间或 pending>
 status: template
 purpose: 请求/响应结构、错误码、接口接入步骤与 DTO 转换
 ---

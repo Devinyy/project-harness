@@ -1,5 +1,7 @@
 ---
-owner: Harness Knowledge System
+owner: pending
+created_at: {{DATE}}
+checked_at: pending
 status: template
 purpose: 维护跨领域术语、字段和改名同步规则
 source: 已确认需求、接口契约、源码调用和团队命名规则
@@ -19,7 +21,7 @@ TERM: TERM-<稳定编号>
 禁止混用: <容易混淆的名称>
 来源: <需求/接口/源码/决策引用>
 适用范围: <系统/模块/端>
-状态: current | pending | retired
+术语状态: current | pending | retired
 ```
 
 ## 改名同步清单

@@ -7,6 +7,7 @@ HARNESS_ROOT=$(cd "$TEST_DIR/../.." && pwd -P)
 
 SCRIPT="$HARNESS_ROOT/scripts/init-project-knowledge.sh"
 FIXTURE_ROOT=$(mktemp -d "${TMPDIR:-/tmp}/harness-project-knowledge.XXXXXX")
+FIXTURE_ROOT=$(cd "$FIXTURE_ROOT" && pwd -P)
 trap 'rm -rf "$FIXTURE_ROOT"' EXIT
 
 assert_file() {
@@ -133,12 +134,174 @@ else
 fi
 assert_contains "$unknown_output" "domain" "unknown domain explains the option"
 
+for reserved_name in _module _case MAP map PROJECT_MAP project_map; do
+  reserved_root="$FIXTURE_ROOT/reserved-$reserved_name"
+  mkdir -p "$reserved_root"
+  reserved_output=$(run_init "$reserved_root" --domain requirements --module "$reserved_name" 2>&1)
+  reserved_exit=$?
+  if [ "$reserved_exit" -ne 0 ]; then
+    pass "reserved module name $reserved_name is rejected"
+  else
+    fail "reserved module name $reserved_name is rejected"
+  fi
+  assert_contains "$reserved_output" "保留" "reserved module name $reserved_name explains the conflict"
+  assert_no_file "$reserved_root" "PROJECT_MAP.md" "reserved module name $reserved_name writes no project map"
+done
+
+for reserved_case in _module _case MAP map PROJECT_MAP project_map; do
+  reserved_case_root="$FIXTURE_ROOT/reserved-case-$reserved_case"
+  mkdir -p "$reserved_case_root"
+  reserved_case_output=$(run_init "$reserved_case_root" --domain experience --case "$reserved_case" 2>&1)
+  reserved_case_exit=$?
+  if [ "$reserved_case_exit" -ne 0 ]; then
+    pass "reserved case name $reserved_case is rejected"
+  else
+    fail "reserved case name $reserved_case is rejected"
+  fi
+  assert_contains "$reserved_case_output" "保留" "reserved case name $reserved_case explains the conflict"
+  assert_no_file "$reserved_case_root" "PROJECT_MAP.md" "reserved case name $reserved_case writes no project map"
+done
+
+target_option_root="$FIXTURE_ROOT/target-option"
+mkdir -p "$target_option_root"
+target_option_output=$(
+  cd "$FIXTURE_ROOT" &&
+    bash "$SCRIPT" --target "$target_option_root" --domain design 2>&1
+)
+target_option_exit=$?
+assert_eq "0" "$target_option_exit" "explicit target directory generation succeeds"
+assert_file "$target_option_root" "PROJECT_MAP.md" "explicit target writes to selected directory"
+assert_contains "$target_option_output" "完成" "explicit target reports completion"
+
+target_symlink_parent="$FIXTURE_ROOT/target-symlink-parent"
+target_symlink_outside="$FIXTURE_ROOT/target-symlink-outside"
+mkdir -p "$target_symlink_parent" "$target_symlink_outside/project"
+ln -s "$target_symlink_outside" "$target_symlink_parent/link"
+target_symlink_output=$(
+  cd "$FIXTURE_ROOT" &&
+    bash "$SCRIPT" --target "$target_symlink_parent/link/project" --domain design 2>&1
+)
+target_symlink_exit=$?
+if [ "$target_symlink_exit" -ne 0 ]; then
+  pass "explicit target ancestor symlink is rejected"
+else
+  fail "explicit target ancestor symlink is rejected"
+fi
+assert_contains "$target_symlink_output" "符号链接" "target ancestor symlink explains the boundary"
+assert_no_file "$target_symlink_outside/project" "PROJECT_MAP.md" "target ancestor symlink writes no outside project map"
+
+development_fixture_repo="$FIXTURE_ROOT/development-checkout"
+development_fixture_harness="$development_fixture_repo/harness"
+mkdir -p "$development_fixture_harness/scripts/lib" "$development_fixture_harness/docs/superpowers"
+cp "$SCRIPT" "$development_fixture_harness/scripts/init-project-knowledge.sh"
+cp "$HARNESS_ROOT/scripts/doctor.sh" "$development_fixture_harness/scripts/doctor.sh"
+cp "$HARNESS_ROOT/scripts/lib/knowledge-manifest.sh" "$development_fixture_harness/scripts/lib/"
+cp -R "$HARNESS_ROOT/project-templates" "$development_fixture_harness/"
+git -C "$development_fixture_repo" init -q
+git -C "$development_fixture_repo" add \
+  harness/scripts/init-project-knowledge.sh \
+  harness/scripts/doctor.sh \
+  harness/project-templates/MANIFEST.tsv
+
+developer_fixture_script="$development_fixture_harness/scripts/init-project-knowledge.sh"
+developer_root_output=$(
+  cd "$development_fixture_harness" &&
+    bash "$developer_fixture_script" --domain harness --dry-run 2>&1
+)
+developer_root_exit=$?
+if [ "$developer_root_exit" -ne 0 ]; then
+  pass "harness development checkout is rejected as implicit target"
+else
+  fail "harness development checkout is rejected as implicit target"
+fi
+assert_contains "$developer_root_output" "开发 checkout" "development checkout rejection explains the target"
+
+developer_repo_root_output=$(
+  cd "$development_fixture_repo" &&
+    bash "$developer_fixture_script" --domain harness --dry-run 2>&1
+)
+developer_repo_root_exit=$?
+if [ "$developer_repo_root_exit" -ne 0 ]; then
+  pass "git repository root is rejected as implicit development target"
+else
+  fail "git repository root is rejected as implicit development target"
+fi
+assert_contains "$developer_repo_root_output" "开发 checkout" "git repository root rejection explains the target"
+
+installed_fixture_root="$FIXTURE_ROOT/installed-project"
+mkdir -p "$installed_fixture_root/scripts/lib" "$installed_fixture_root/docs/superpowers"
+cp "$SCRIPT" "$installed_fixture_root/scripts/init-project-knowledge.sh"
+cp "$HARNESS_ROOT/scripts/lib/knowledge-manifest.sh" "$installed_fixture_root/scripts/lib/"
+cp -R "$HARNESS_ROOT/project-templates" "$installed_fixture_root/"
+git -C "$installed_fixture_root" init -q
+installed_root_output=$(
+  cd "$installed_fixture_root" &&
+    bash "$installed_fixture_root/scripts/init-project-knowledge.sh" --domain harness --dry-run 2>&1
+)
+installed_root_exit=$?
+assert_eq "0" "$installed_root_exit" "installed project root is allowed without development markers"
+assert_contains "$installed_root_output" "DRY-RUN" "installed project root reports the planned generation"
+
+intermediate_file_root="$FIXTURE_ROOT/intermediate-file"
+mkdir -p "$intermediate_file_root"
+printf '%s\n' 'not a directory' > "$intermediate_file_root/requirements"
+intermediate_file_output=$(run_init "$intermediate_file_root" --domain requirements 2>&1)
+intermediate_file_exit=$?
+if [ "$intermediate_file_exit" -ne 0 ]; then
+  pass "ordinary intermediate parent file is rejected"
+else
+  fail "ordinary intermediate parent file is rejected"
+fi
+assert_contains "$intermediate_file_output" "普通文件" "intermediate parent file explains the target type conflict"
+assert_no_file "$intermediate_file_root" "PROJECT_MAP.md" "intermediate parent file writes no project map"
+
+case_conflict_root="$FIXTURE_ROOT/case-conflict"
+mkdir -p "$case_conflict_root/requirements"
+printf '%s\n' 'existing case-conflicting file' > "$case_conflict_root/requirements/map.md"
+case_conflict_output=$(run_init "$case_conflict_root" --domain requirements 2>&1)
+case_conflict_exit=$?
+if [ "$case_conflict_exit" -ne 0 ]; then
+  pass "case-conflicting target path is rejected"
+else
+  fail "case-conflicting target path is rejected"
+fi
+assert_contains "$case_conflict_output" "大小写" "case-conflicting target explains the collision"
+assert_no_file "$case_conflict_root" "PROJECT_MAP.md" "case-conflicting target writes no project map"
+
+readonly_root="$FIXTURE_ROOT/readonly"
+mkdir -p "$readonly_root"
+chmod 500 "$readonly_root"
+readonly_output=$(run_init "$readonly_root" --domain design 2>&1)
+readonly_exit=$?
+if [ "$readonly_exit" -ne 0 ]; then
+  pass "read-only target directory is rejected before generation"
+else
+  fail "read-only target directory is rejected before generation"
+fi
+assert_contains "$readonly_output" "写权限" "read-only target explains the permission failure"
+chmod 700 "$readonly_root"
+assert_no_file "$readonly_root" "PROJECT_MAP.md" "read-only target writes no project map"
+
+plan_tmp_file="$FIXTURE_ROOT/tmpdir-file"
+printf '%s\n' 'not a directory' > "$plan_tmp_file"
+mkdir -p "$FIXTURE_ROOT/invalid-plan"
+plan_output=$(TMPDIR="$plan_tmp_file" run_init "$FIXTURE_ROOT/invalid-plan" --domain design 2>&1)
+plan_exit=$?
+if [ "$plan_exit" -ne 0 ]; then
+  pass "plan file creation failure is reported"
+else
+  fail "plan file creation failure is reported"
+fi
+assert_contains "$plan_output" "临时" "plan file failure explains the write boundary"
+assert_no_file "$FIXTURE_ROOT/invalid-plan" "PROJECT_MAP.md" "plan file failure writes no project map"
+
 target_root="$FIXTURE_ROOT/target"
 mkdir -p "$target_root"
 
 # Preserve an existing user file while allowing the generated domain to add
 # its missing navigation entry.
 printf '%s\n' '# User root navigation' 'keep this line' > "$target_root/MAP.md"
+printf '%s\n' '<!-- init-project-knowledge generated entries -->' '- [legacy-harness](./harness/MAP.md)' >> "$target_root/MAP.md"
 mkdir -p "$target_root/harness"
 printf '%s\n' '# User harness navigation' 'keep this harness line' > "$target_root/harness/MAP.md"
 run_init "$target_root" --domain harness >/dev/null 2>&1
@@ -149,10 +312,27 @@ else
   fail "harness domain generates successfully"
 fi
 assert_contains "$(cat "$target_root/MAP.md")" "keep this line" "existing root MAP text is preserved"
+assert_file "$target_root" "PROJECT_MAP.md" "project map is generated separately from tool MAP"
+assert_contains "$(cat "$target_root/PROJECT_MAP.md")" "项目资料登记" "project map has an independent title"
+assert_contains "$(cat "$target_root/PROJECT_MAP.md")" "legacy-harness" "legacy root MAP entries migrate to project map"
+assert_contains "$(cat "$target_root/MAP.md")" "legacy-harness" "legacy root MAP remains unchanged"
 assert_file "$target_root" "harness/MAP.md" "harness MAP is generated"
 assert_contains "$(cat "$target_root/harness/MAP.md")" "keep this harness line" "existing domain MAP text is preserved"
 assert_contains "$(cat "$target_root/harness/MAP.md")" "adr.md" "custom harness MAP registers generated files"
 assert_contains "$(cat "$target_root/harness/MAP.md")" "scenes/MAP.md" "custom harness MAP registers generated submaps"
+
+unsafe_legacy_root="$FIXTURE_ROOT/unsafe-legacy"
+mkdir -p "$unsafe_legacy_root"
+printf '%s\n' '<!-- init-project-knowledge generated entries -->' '- [escape](../outside.md)' > "$unsafe_legacy_root/MAP.md"
+unsafe_legacy_output=$(run_init "$unsafe_legacy_root" --domain harness 2>&1)
+unsafe_legacy_exit=$?
+if [ "$unsafe_legacy_exit" -ne 0 ]; then
+  pass "unsafe legacy MAP link is rejected before generation"
+else
+  fail "unsafe legacy MAP link is rejected before generation"
+fi
+assert_contains "$unsafe_legacy_output" "旧 MAP 迁移候选" "unsafe legacy MAP explains the migration boundary"
+assert_no_file "$unsafe_legacy_root" "PROJECT_MAP.md" "unsafe legacy MAP writes no project map"
 
 for simple_domain in design docs; do
   simple_root="$FIXTURE_ROOT/$simple_domain"
@@ -208,7 +388,7 @@ experience_plain_root="$FIXTURE_ROOT/experience-plain"
 mkdir -p "$experience_plain_root"
 run_init "$experience_plain_root" --domain experience >/dev/null 2>&1
 plain_experience_text=$(cat "$experience_plain_root/experience/aibrain/preflight.md" 2>/dev/null || true)
-assert_contains "$(cat "$experience_plain_root/MAP.md" 2>/dev/null || true)" "./badcase/MAP.md" "experience root MAP registers badcase MAP"
+assert_contains "$(cat "$experience_plain_root/PROJECT_MAP.md" 2>/dev/null || true)" "./badcase/MAP.md" "experience root MAP registers badcase MAP"
 assert_not_contains "$plain_experience_text" "owner: ../" "experience owner is not rendered as a relative path"
 if printf '%s\n' "$plain_experience_text" | grep -qE '需求/模块 ID.* /[[:space:]]*$'; then
   fail "experience-only template does not erase an absent module identifier"
@@ -221,6 +401,7 @@ fi
 all_root="$FIXTURE_ROOT/all"
 mkdir -p "$all_root"
 template_checksum_before=$(cksum "$HARNESS_ROOT/project-templates/harness/MAP.md")
+root_map_checksum_before=$(cksum "$HARNESS_ROOT/MAP.md")
 run_init "$all_root" --domain all >/dev/null 2>&1
 all_exit=$?
 if [ "$all_exit" -eq 0 ]; then
@@ -230,9 +411,11 @@ else
 fi
 template_checksum_after=$(cksum "$HARNESS_ROOT/project-templates/harness/MAP.md")
 assert_eq "$template_checksum_before" "$template_checksum_after" "generation does not modify source templates"
-check_local_links "$all_root" "$all_root/MAP.md" "generated root MAP"
-assert_contains "$(cat "$all_root/MAP.md")" "./badcase/MAP.md" "all root MAP registers badcase MAP"
-all_badcase_root_count=$(grep -F -c '](./badcase/MAP.md)' "$all_root/MAP.md" 2>/dev/null || true)
+root_map_checksum_after=$(cksum "$HARNESS_ROOT/MAP.md")
+assert_eq "$root_map_checksum_before" "$root_map_checksum_after" "generation does not modify the distributed root MAP"
+check_local_links "$all_root" "$all_root/PROJECT_MAP.md" "generated project MAP"
+assert_contains "$(cat "$all_root/PROJECT_MAP.md")" "./badcase/MAP.md" "all project MAP registers badcase MAP"
+all_badcase_root_count=$(grep -F -c '](./badcase/MAP.md)' "$all_root/PROJECT_MAP.md" 2>/dev/null || true)
 assert_eq "1" "$all_badcase_root_count" "all root MAP registers badcase once"
 while IFS= read -r generated_file; do
   check_local_links "$all_root" "$generated_file" "generated $(basename "$generated_file")"
@@ -243,11 +426,8 @@ while IFS=$'\t' read -r domain relative_path kind; do
   esac
   [ "$kind" = "static" ] || continue
   assert_file "$all_root" "$relative_path" "all generates $relative_path"
-  if grep -q '^status:[[:space:]]*template[[:space:]]*$' "$all_root/$relative_path" 2>/dev/null; then
-    fail "$relative_path is emitted as draft"
-  else
-    pass "$relative_path is emitted as draft"
-  fi
+  generated_status=$(sed -nE 's/^(status:[[:space:]]*[^[:space:]]+).*$/\1/p' "$all_root/$relative_path" | head -1)
+  assert_eq "status: draft" "$generated_status" "$relative_path is emitted with exact draft status"
 done < "$HARNESS_ROOT/project-templates/MANIFEST.tsv"
 
 # Re-running is idempotent: no duplicate dynamic index entries and no target
@@ -275,10 +455,90 @@ fi
 assert_contains "$symlink_output" "符号链接" "symlink rejection explains the boundary"
 assert_eq "0" "$(find "$outside_root" -type f -print | wc -l | tr -d ' ')" "target symlink rejection writes no outside files"
 
+prepare_manifest_distribution() {
+  local distribution_root="$1"
+  local target_root="$2"
+  mkdir -p "$distribution_root/scripts/lib" "$target_root"
+  cp "$SCRIPT" "$distribution_root/scripts/init-project-knowledge.sh"
+  cp "$HARNESS_ROOT/scripts/lib/knowledge-manifest.sh" "$distribution_root/scripts/lib/"
+  cp -R "$HARNESS_ROOT/project-templates" "$distribution_root/"
+}
+
+duplicate_manifest_distribution="$FIXTURE_ROOT/duplicate-manifest-distribution"
+duplicate_manifest_target="$FIXTURE_ROOT/duplicate-manifest-target"
+prepare_manifest_distribution "$duplicate_manifest_distribution" "$duplicate_manifest_target"
+sed -n '1p' "$duplicate_manifest_distribution/project-templates/MANIFEST.tsv" >> "$duplicate_manifest_distribution/project-templates/MANIFEST.tsv"
+duplicate_manifest_output=$(
+  cd "$duplicate_manifest_target" &&
+    bash "$duplicate_manifest_distribution/scripts/init-project-knowledge.sh" --domain harness 2>&1
+)
+duplicate_manifest_exit=$?
+if [ "$duplicate_manifest_exit" -ne 0 ]; then
+  pass "duplicate manifest path is rejected"
+else
+  fail "duplicate manifest path is rejected"
+fi
+assert_contains "$duplicate_manifest_output" "重复" "duplicate manifest explains the conflict"
+assert_no_file "$duplicate_manifest_target" "PROJECT_MAP.md" "duplicate manifest writes no project map"
+
+crlf_manifest_distribution="$FIXTURE_ROOT/crlf-manifest-distribution"
+crlf_manifest_target="$FIXTURE_ROOT/crlf-manifest-target"
+prepare_manifest_distribution "$crlf_manifest_distribution" "$crlf_manifest_target"
+awk '{ printf "%s\r\n", $0 }' "$crlf_manifest_distribution/project-templates/MANIFEST.tsv" > "$crlf_manifest_distribution/project-templates/MANIFEST.crlf"
+mv "$crlf_manifest_distribution/project-templates/MANIFEST.crlf" "$crlf_manifest_distribution/project-templates/MANIFEST.tsv"
+crlf_manifest_output=$(
+  cd "$crlf_manifest_target" &&
+    bash "$crlf_manifest_distribution/scripts/init-project-knowledge.sh" --domain harness 2>&1
+)
+crlf_manifest_exit=$?
+if [ "$crlf_manifest_exit" -ne 0 ]; then
+  pass "CRLF manifest is rejected consistently"
+else
+  fail "CRLF manifest is rejected consistently"
+fi
+assert_contains "$crlf_manifest_output" "CR/CRLF" "CRLF manifest explains the line-ending contract"
+assert_no_file "$crlf_manifest_target" "PROJECT_MAP.md" "CRLF manifest writes no project map"
+
+bom_manifest_distribution="$FIXTURE_ROOT/bom-manifest-distribution"
+bom_manifest_target="$FIXTURE_ROOT/bom-manifest-target"
+prepare_manifest_distribution "$bom_manifest_distribution" "$bom_manifest_target"
+{ printf '\357\273\277'; cat "$bom_manifest_distribution/project-templates/MANIFEST.tsv"; } > "$bom_manifest_distribution/project-templates/MANIFEST.bom"
+mv "$bom_manifest_distribution/project-templates/MANIFEST.bom" "$bom_manifest_distribution/project-templates/MANIFEST.tsv"
+bom_manifest_output=$(
+  cd "$bom_manifest_target" &&
+    bash "$bom_manifest_distribution/scripts/init-project-knowledge.sh" --domain harness 2>&1
+)
+bom_manifest_exit=$?
+if [ "$bom_manifest_exit" -ne 0 ]; then
+  pass "BOM manifest is rejected consistently"
+else
+  fail "BOM manifest is rejected consistently"
+fi
+assert_contains "$bom_manifest_output" "BOM" "BOM manifest explains the encoding contract"
+assert_no_file "$bom_manifest_target" "PROJECT_MAP.md" "BOM manifest writes no project map"
+
+cross_domain_manifest_distribution="$FIXTURE_ROOT/cross-domain-manifest-distribution"
+cross_domain_manifest_target="$FIXTURE_ROOT/cross-domain-manifest-target"
+prepare_manifest_distribution "$cross_domain_manifest_distribution" "$cross_domain_manifest_target"
+printf '%s\n' 'harness	badcase/MAP.md	static' >> "$cross_domain_manifest_distribution/project-templates/MANIFEST.tsv"
+cross_domain_manifest_output=$(
+  cd "$cross_domain_manifest_target" &&
+    bash "$cross_domain_manifest_distribution/scripts/init-project-knowledge.sh" --domain harness 2>&1
+)
+cross_domain_manifest_exit=$?
+if [ "$cross_domain_manifest_exit" -ne 0 ]; then
+  pass "cross-domain manifest path is rejected"
+else
+  fail "cross-domain manifest path is rejected"
+fi
+assert_contains "$cross_domain_manifest_output" "domain 与 path" "cross-domain manifest explains the path boundary"
+assert_no_file "$cross_domain_manifest_target" "PROJECT_MAP.md" "cross-domain manifest writes no project map"
+
 broken_distribution="$FIXTURE_ROOT/broken-distribution"
 broken_target="$FIXTURE_ROOT/broken-target"
-mkdir -p "$broken_distribution/scripts" "$broken_target"
+mkdir -p "$broken_distribution/scripts/lib" "$broken_target"
 cp "$SCRIPT" "$broken_distribution/scripts/init-project-knowledge.sh"
+cp "$HARNESS_ROOT/scripts/lib/knowledge-manifest.sh" "$broken_distribution/scripts/lib/"
 cp -R "$HARNESS_ROOT/project-templates" "$broken_distribution/"
 rm "$broken_distribution/project-templates/MANIFEST.tsv"
 broken_output=$(
@@ -296,8 +556,9 @@ assert_no_file "$broken_target" "MAP.md" "broken distribution does not write a r
 
 missing_source_distribution="$FIXTURE_ROOT/missing-source-distribution"
 missing_source_target="$FIXTURE_ROOT/missing-source-target"
-mkdir -p "$missing_source_distribution/scripts" "$missing_source_target"
+mkdir -p "$missing_source_distribution/scripts/lib" "$missing_source_target"
 cp "$SCRIPT" "$missing_source_distribution/scripts/init-project-knowledge.sh"
+cp "$HARNESS_ROOT/scripts/lib/knowledge-manifest.sh" "$missing_source_distribution/scripts/lib/"
 cp -R "$HARNESS_ROOT/project-templates" "$missing_source_distribution/"
 rm "$missing_source_distribution/project-templates/harness/adr.md"
 missing_source_output=$(
@@ -317,8 +578,9 @@ assert_no_file "$missing_source_target" "harness/adr.md" "missing source writes 
 source_symlink_distribution="$FIXTURE_ROOT/source-symlink-distribution"
 source_symlink_target="$FIXTURE_ROOT/source-symlink-target"
 source_symlink_outside="$FIXTURE_ROOT/source-symlink-outside"
-mkdir -p "$source_symlink_distribution/scripts" "$source_symlink_target" "$source_symlink_outside"
+mkdir -p "$source_symlink_distribution/scripts/lib" "$source_symlink_target" "$source_symlink_outside"
 cp "$SCRIPT" "$source_symlink_distribution/scripts/init-project-knowledge.sh"
+cp "$HARNESS_ROOT/scripts/lib/knowledge-manifest.sh" "$source_symlink_distribution/scripts/lib/"
 cp -R "$HARNESS_ROOT/project-templates" "$source_symlink_distribution/"
 printf '%s\n' '# outside source' > "$source_symlink_outside/adr.md"
 rm "$source_symlink_distribution/project-templates/harness/adr.md"
@@ -345,7 +607,7 @@ if [ "$module_map_collision_exit" -ne 0 ]; then
 else
   fail "module MAP target collision is rejected"
 fi
-assert_contains "$module_map_collision_output" "重复目标路径" "module MAP collision explains the target conflict"
+assert_contains "$module_map_collision_output" "MAP" "module MAP collision explains the target conflict"
 assert_no_file "$module_map_collision_root" "MAP.md" "module MAP collision writes no root MAP"
 
 case_map_collision_root="$FIXTURE_ROOT/case-map-collision"
@@ -357,7 +619,7 @@ if [ "$case_map_collision_exit" -ne 0 ]; then
 else
   fail "case MAP target collision is rejected"
 fi
-assert_contains "$case_map_collision_output" "重复目标路径" "case MAP collision explains the target conflict"
+assert_contains "$case_map_collision_output" "MAP" "case MAP collision explains the target conflict"
 assert_no_file "$case_map_collision_root" "MAP.md" "case MAP collision writes no root MAP"
 
 # The optional knowledge package coexists with both supported frontend
@@ -390,6 +652,8 @@ active_frontend_root="$FIXTURE_ROOT/frontend-active"
 mkdir -p "$active_frontend_root/docs/specs" "$active_frontend_root/bin"
 cp -R "$HARNESS_ROOT/project-templates" "$active_frontend_root/"
 cp -R "$HARNESS_ROOT/scripts" "$active_frontend_root/"
+cp "$HARNESS_ROOT/MAP.md" "$active_frontend_root/MAP.md"
+cp "$HARNESS_ROOT/VERSION" "$active_frontend_root/VERSION"
 git -C "$active_frontend_root" init -q
 printf '%s\n' '{"name":"active-knowledge-fixture","scripts":{}}' > "$active_frontend_root/package.json"
 printf '%s\n' '{}' > "$active_frontend_root/tsconfig.json"

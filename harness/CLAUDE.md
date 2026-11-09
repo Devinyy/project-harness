@@ -3,7 +3,7 @@
 ## 共享规则
 
 先阅读同目录 `AGENTS.md`。它是 active/draft/missing 共享状态、边界（含 `13_AGENT_POLICY.md`）、危险区和验证的唯一来源；不要在此复制。
-总导航见 [MAP.md](./MAP.md)，通用验收见 [docs/harness/verification.md](./docs/harness/verification.md)。
+静态工具导航见 [MAP.md](./MAP.md)，接入项目后的资料索引见根 `PROJECT_MAP.md`，通用验收见 [docs/harness/verification.md](./docs/harness/verification.md)。
 
 ## Claude Code 入口
 

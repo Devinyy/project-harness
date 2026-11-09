@@ -1,5 +1,7 @@
 ---
-owner: Harness Knowledge System
+owner: pending
+created_at: {{DATE}}
+checked_at: pending
 status: template
 purpose: 记录 API 联调、契约匹配和失败边界
 source: 项目 API specs、前后端接口、网络/服务日志和可重跑请求
@@ -22,9 +24,10 @@ ID: API-<稳定编号>
 请求/响应摘要: <不含秘密和客户原始数据的结构摘要>
 错误/兼容边界: <已验证与未验证的错误码、分页、超时或降级>
 命令/证据: <可重跑命令、截图或日志路径>
-核对时间: {{DATE}}
+创建时间: {{DATE}}
+核对时间: <实际核对时间；未核对写 pending>
 实际结果: <观察到的结果>
-状态: pass | fail | blocked | unverified
+证据结果: pass | fail | blocked | unverified
 未验证范围: <未覆盖的字段、端、服务或权限>
 ```
 

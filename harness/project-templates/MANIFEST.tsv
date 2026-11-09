@@ -22,6 +22,7 @@ docs	docs/environment.md	static
 docs	docs/api-integration.md	static
 docs	docs/backend-evidence.md	static
 docs	docs/release-evidence.md	static
+docs	docs/acceptance-evidence.md	static
 experience	experience/MAP.md	static
 experience	experience/aibrain/MAP.md	static
 experience	experience/aibrain/preflight.md	static

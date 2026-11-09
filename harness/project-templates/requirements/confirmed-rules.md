@@ -1,5 +1,7 @@
 ---
-owner: Harness Knowledge System
+owner: pending
+created_at: {{DATE}}
+checked_at: pending
 status: template
 purpose: 维护用户已确认的稳定规则与适用范围
 source: 用户明确确认、PRD/任务单或批准的决策记录
@@ -22,10 +24,11 @@ ID: RULE-<稳定编号>
 适用范围: <端、角色、模块、数据或环境>
 排除范围: <明确不包含的内容>
 验收用例: CASE-<编号> | none
-实现状态: not-started | partial | observed | not-found
-验收结果: pass | fail | blocked | unverified
-关联偏差: DEV-<编号> | none
-下一步: <仍需确认、实现或验证的行动>
+关联决策: ADR-<编号> | none
+实现引用: IMPL-<编号> | none
+验收引用: CASE-<编号> / QA-<编号> | none
+偏差引用: DEV-<编号> | none
+下一步: <仍需确认的目标行动；实现和验收由引用资料记录>
 ```
 
-当前实现和验收结果只通过 ID/路径引用；不因实现存在就改写确认状态。
+本记录只维护用户目标、确认来源和稳定 ID 引用；实现状态、验收结果和偏差不在此重复维护。只通过 ID/路径引用，不因实现存在就改写确认状态。

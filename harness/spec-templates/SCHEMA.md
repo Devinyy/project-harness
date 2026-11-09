@@ -39,8 +39,9 @@ PC 的 `dcgj-components/COMPONENT_INDEX.md` 必须从实际锁定版本、组件
 
 ```
 ---
-owner: Frontend Team
-last_verified: <生成日期>
+owner: pending
+created_at: <生成日期>
+checked_at: <实际复核时间或 pending>
 status: draft        # 人工复核后改 active
 purpose: <一句话>
 ---
@@ -59,4 +60,4 @@ purpose: <一句话>
 篇幅克制；路径/端口/字段/命令一律取证；flavor 给的是典型形态，真实值以当前仓库为准。
 `02_ARCHITECTURE` 的「通用分层模型」与 `05_COMPONENT_PATTERNS` 的「拆分原则」是团队固定基线，**填充时保留不改**，只在其下补项目特例。
 
-`03_BUSINESS_DOMAIN` 必须把用户确认的目标与当前实现事实分节；`08_TASK_PLAYBOOKS` 只写 flavor/项目差异并链接专项命令，不复制通用验收流程。填充完成后仍需人工复核，再将文档状态改为 `active`。
+`03_BUSINESS_DOMAIN` 的目标部分只保留用户确认的稳定需求/决策引用，不复制目标正文；当前实现事实另按源码、配置和运行证据填充。`08_TASK_PLAYBOOKS` 只写 flavor/项目差异并链接专项命令，不复制通用验收流程。`created_at` 与 `checked_at` 分开，填充完成后人工复核并填写实际 `checked_at`，再将文档状态改为 `active`。

@@ -3,8 +3,9 @@
 > 🧩 模版骨架（A 精炼版）：保留结构，正文按真实代码填充；拿不准标 `// TODO: 待确认`，禁止编造。
 
 ---
-owner: Frontend Team
-last_verified: <生成时填写>
+owner: pending
+created_at: <生成时填写>
+checked_at: <实际复核时间或 pending>
 status: template
 purpose: 常见任务的标准步骤
 ---
@@ -34,5 +35,5 @@ purpose: 常见任务的标准步骤
 ## 新增组件
 <填写：依据真实代码/配置提炼>
 
-每项任务完成后按 [verification contract](../../docs/harness/verification.md) 留下实现状态、命令/环境证据和未验证范围；涉及权限、公共能力、接口或运行交互时安排独立 QA。
+每项任务完成后按 [verification contract](../../docs/harness/verification.md) 留下实现状态、命令/环境证据、验收结果和未验证范围。
 

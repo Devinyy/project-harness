@@ -1,8 +1,9 @@
 # 00_PROJECT_FACTS.md（模版骨架 · uni-app 多端 flavor）
 > 🧩 A 精炼版：`<...>` 为占位符，按真实代码填充；固定常量已给出，仍需核对版本/路径。
 ---
-owner: Frontend Team
-last_verified: <生成时填写>
+owner: pending
+created_at: <生成时填写>
+checked_at: <实际复核时间或 pending>
 status: template
 purpose: 项目事实速查（栈/命令/目录/认证/多端），agent 首先阅读这份
 ---

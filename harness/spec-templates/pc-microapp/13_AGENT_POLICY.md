@@ -3,8 +3,9 @@
 > 🧩 模版骨架：按项目真实约束细化，但必须保留 Allowed / Blocked / Ask First 三个顶层分组；不要把需确认事项误写成默认授权。
 
 ---
-owner: Frontend Team
-last_verified: <生成时填写>
+owner: pending
+created_at: <生成时填写>
+checked_at: <实际复核时间或 pending>
 status: template
 purpose: AI agent 的显式操作权限边界
 ---

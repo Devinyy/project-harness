@@ -2,14 +2,17 @@
 
 本文件记录 Project Harness 的版本变更。遵循「机制改动写清楚为什么」。
 
-## Harness 2.0 开发版（基于 v2.9）
+## Harness 2.0.0
 
-本节记录基于 v2.9 的 Harness 2.0 开发版变更；既有 v2.9 历史保持不变。
+本节记录 Harness 2.0.0 发布资产与基于 v2.9 的机制演进；既有 v2.9 历史保持不变。
 
 - **新增总 MAP 与通用契约**：`MAP.md` 连接需求/目标、架构与 ADR、前端开发、API/环境证据、验收和发布/回滚入口；`docs/harness/knowledge.md` 统一目标、实现、规范、决策和证据记录，`docs/harness/verification.md` 统一独立 QA、受阻、复验和升级边界。*为什么*：让各 agent 共享一份导航和验收语义，避免复制规则或把业务目标当成实现事实。
 - **保留前端 specs 与初始化机制**：`docs/specs/` 路径、`missing / draft / active` 三态、Hook 协议和 `scripts/init-specs.sh` 保持不变；两套 flavor 只补前端差异并引用通用契约。*为什么*：兼容现有接入项目，同时让需求草稿与真实实现证据分离。
 - **分发边界明确**：Harness 包必须包含 `MAP.md` 与 `docs/harness/`，不携带真实项目 specs 或空业务资料；初始化后仍由目标项目维护自己的 `docs/specs/`。
 - **补全可复用资料模板**：新增 `project-templates/`、三列 `MANIFEST.tsv`、五个 domain、按需生成的 draft 骨架、需求到证据的稳定引用链，以及 `docs/harness/diagrams/` 的当前结构/导航图。显式初始化不覆盖既有资料、不生成空业务事实；前端 specs、token、Hook、三态状态和公共验收规则保持原路径与来源。
+- **固定版本与分发入口**：版本写入 `VERSION` 为 `2.0.0`；归档以 `distribution/MANIFEST.txt` 为唯一资产清单，通过 `bash scripts/package-harness.sh --output DIR` 构建归档与 SHA256。升级需保留项目根 `PROJECT_MAP.md`、已生成领域、前端 specs/token 和自定义入口。
+- **固定项目索引与验收证据**：初始化后的用户登记入口为 `PROJECT_MAP.md`，根 `MAP.md` 保持静态；新增 `docs/acceptance-evidence.md` 模板并纳入 manifest，验收记录关联 REQ/IMPL/UX/CASE/QA/RELEASE，实际证据缺失时保持 `unverified` 或 `blocked`。
+- **集中生命周期字段**：`docs/harness/knowledge.md` 集中定义成熟度、目标确认、实现、决策、执行计划、证据、偏差和 QA 方式；模板将 owner、创建时间和核对时间分开，未把长期效率或业务试点结果写成发布证明。
 
 ## Unreleased — Figma / 截图上下文路由
 

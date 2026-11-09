@@ -3,8 +3,9 @@
 > 🧩 模版骨架（A 精炼版）：保留结构，正文按真实代码填充；拿不准标 `// TODO: 待确认`，禁止编造。
 
 ---
-owner: Frontend Team
-last_verified: <生成时填写>
+owner: pending
+created_at: <生成时填写>
+checked_at: <实际复核时间或 pending>
 status: template
 purpose: UI 库（dcgj-ui）选型与用法约定
 ---
@@ -27,11 +28,11 @@ purpose: UI 库（dcgj-ui）选型与用法约定
 ## 3. 主题与全局样式约定
 <填写：ConfigProvider / 主题变量入口；不要为局部需求改全局>
 
-### PC 设计 Token
+### PC 设计 Token（按需）
 
-- PC 端色号、字号、边框、背景、控件尺寸等视觉值以 `docs/token-specs/` 为准。
-- `docs/token-specs/Light.tokens.json` 是 Figma Light 模式原始 token；`docs/token-specs/antd-vue-theme.ts` 是 Ant Design Vue / dcgj-ui 主题配置参考。
-- 实现 Figma 标注的 `Global/Typography/fontSize`、`Global/Colors/*` 等值时，先查 `docs/token-specs/`，不要直接手写新色号或字号。
+- 若目标项目提供 `docs/token-specs/`，PC 端色号、字号、边框、背景、控件尺寸等视觉值以其实际文件为准；未提供时记录 `none`/`unverified`，不要假定 token 文件存在。
+- 只有目标项目实际生成并核对了 `Light.tokens.json` 或主题配置时，才引用对应文件；模板不把它们当作已存在事实。
+- 实现 Figma 标注的 `Global/Typography/fontSize`、`Global/Colors/*` 等值时，先查目标项目实际 token 来源，不要直接手写新色号或字号。
 - 若设计稿出现 token 中不存在的值，标记 `// TODO: 待确认设计 token`，不要自行扩展临时值。
 
 ### PC 画布与自适应

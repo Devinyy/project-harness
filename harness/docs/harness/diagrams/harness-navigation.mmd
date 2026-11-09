@@ -1,7 +1,8 @@
 %% Source: MAP.md, AGENTS.md, docs/harness/verification.md
 %% Updated: 2026-11-09; conditional project paths are intentionally not asserted as present.
 flowchart TD
-    start["从问题开始\nMAP.md"]
+    start["从问题开始\n静态 MAP.md"]
+    project_map["项目资料登记\nPROJECT_MAP.md（初始化后创建）"]
 
     start --> goal["需求/已确认目标"]
     start --> system["全系统/跨端架构\n已有资料或按需 docs/architecture/"]
@@ -11,12 +12,14 @@ flowchart TD
     start --> qa["验收 / 偏差复验\ndocs/harness/verification.md"]
     start --> release["发布 / 回滚\n按需 release/ 与 evidence/"]
     start --> templates["资料模板\nproject-templates/README.md + MANIFEST.tsv"]
+    start --> project_map
 
     goal -. "按需建立；无确认保持 pending" .-> requirements["requirements domain\n仅显式生成 draft"]
+    project_map --> requirements
+    project_map --> design["design domain\n引用既有 token/UI 规则"]
+    project_map --> docs["docs domain\n只记录真实证据"]
+    project_map --> experience["experience / badcase\n可选，需真实来源"]
     templates --> requirements
-    templates --> design["design domain\n引用既有 token/UI 规则"]
-    templates --> docs["docs domain\n只记录真实证据"]
-    templates --> experience["experience / badcase\n可选，需真实来源"]
 
     frontend --> state{ "docs/specs 状态" }
     state -->|missing| init_specs["bash scripts/init-specs.sh\n或 Claude /init-specs"]

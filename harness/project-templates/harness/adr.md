@@ -1,5 +1,7 @@
 ---
-owner: Harness Knowledge System
+owner: pending
+created_at: {{DATE}}
+checked_at: pending
 status: template
 purpose: 记录架构与协作决策及其替代关系
 source: 用户/团队批准的 ADR、方案评审和可追溯证据
@@ -14,9 +16,12 @@ maintained_when: 方案被批准、替代、撤回或影响面变化时
 
 ```text
 ID: ADR-<稳定编号>
+关联目标: REQ-<编号> | none
+关联实现: IMPL-<编号> | none
 来源: <用户/团队/评审记录引用>
-日期: <YYYY-MM-DD>
-状态: proposed | accepted | superseded | rejected
+创建时间: <实际创建时间，含时区>
+核对时间: <实际核对时间，含时区；未复核写 pending>
+决策状态: proposed | accepted | superseded | rejected
 适用范围: <系统、跨端、前端领域或协作流程>
 背景: <需要解决的问题和约束>
 备选:

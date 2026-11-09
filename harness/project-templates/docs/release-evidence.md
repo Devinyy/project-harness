@@ -1,5 +1,7 @@
 ---
-owner: Harness Knowledge System
+owner: pending
+created_at: {{DATE}}
+checked_at: pending
 status: template
 purpose: 记录发布、访问、回滚和事故核对证据
 source: 发布平台、部署提交、实际站点/服务访问和回滚记录
@@ -24,6 +26,8 @@ ID: RELEASE-<稳定编号>
 回滚方案/证据: <触发条件、命令、制品或实际回滚结果>
 发布状态: planned | released | rolled-back | blocked
 证据结果: pass | fail | blocked | unverified
+关联验收: QA-<编号> | none
+关联用例: CASE-<编号> | none
 来源: <平台输出、访问记录、截图或日志路径>
 未验证范围: <未覆盖的功能、端、权限、流量或监控>
 下一步: <责任角色和行动>

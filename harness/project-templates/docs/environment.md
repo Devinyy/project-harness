@@ -1,5 +1,7 @@
 ---
-owner: Harness Knowledge System
+owner: pending
+created_at: {{DATE}}
+checked_at: pending
 status: template
 purpose: 记录仓库、提交、设备、账号和环境核对结果
 source: Git、命令输出、运行地址、设备/账号和人工核对
@@ -18,10 +20,11 @@ ID: ENV-<稳定编号>
 地址/设备: <URL、设备、浏览器、端或模拟器；没有写 none>
 账号/角色/数据: <仅记录必要角色和数据前提，不写秘密>
 命令/操作: <可重跑命令或手工步骤>
-核对时间: {{DATE}}
+创建时间: {{DATE}}
+核对时间: <实际核对时间；未核对写 pending>
 来源: <Git、平台输出、截图或命令日志路径>
 实际结果: <观察到的结果>
-状态: pass | fail | blocked | unverified
+证据结果: pass | fail | blocked | unverified
 未验证范围: <未覆盖的端、权限、数据、页面或平台>
 ```
 

@@ -1,5 +1,7 @@
 ---
-owner: Harness Knowledge System
+owner: pending
+created_at: {{DATE}}
+checked_at: pending
 status: template
 purpose: Harness 资料域的导航与维护入口
 source: 项目已有入口、源码和经确认的协作规则
